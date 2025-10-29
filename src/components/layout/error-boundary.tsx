@@ -7,16 +7,18 @@ import {
 	useMatch,
 	useRouter,
 } from '@tanstack/react-router'
+import { ServerCrashIcon } from 'lucide-react'
 import { useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-} from '@/components/ui/card'
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from '@/components/ui/empty'
 
 export function DefaultErrorBoundary({ error }: ErrorComponentProps) {
 	const router = useRouter()
@@ -34,49 +36,48 @@ export function DefaultErrorBoundary({ error }: ErrorComponentProps) {
 
 	return (
 		<main className="h-svh grid place-items-center">
-			<Card className="mx-auto max-w-sm w-full">
-				<CardHeader>
-					<h1 className="text-center font-semibold leading-none tracking-tight text-[6rem]">
-						Server Error
-					</h1>
-					<CardDescription className="text-center">
+			<Empty>
+				<EmptyHeader>
+					<EmptyMedia variant="icon">
+						<ServerCrashIcon />
+					</EmptyMedia>
+					<EmptyTitle className="font-bold text-2xl">Server Error</EmptyTitle>
+					<EmptyDescription className="text-nowrap">
 						We apologize for the inconvenience. <br /> Please try again later.
-					</CardDescription>
-				</CardHeader>
-
-				<CardContent>
+					</EmptyDescription>
+				</EmptyHeader>
+				<EmptyContent>
 					<ErrorComponent error={error} />
-				</CardContent>
-
-				<CardFooter className="md:gap-16 sm:gap-8 gap-4 justify-between">
-					<Button
-						onClick={() => {
-							void router.invalidate()
-						}}
-						variant="outline"
-					>
-						Try again
-					</Button>
-
-					{isRoot ? (
-						<Button asChild>
-							<Link to="/">Go Home</Link>
+					<div className="flex gap-8">
+						<Button
+							onClick={() => {
+								void router.invalidate()
+							}}
+							variant="outline"
+						>
+							Try again
 						</Button>
-					) : (
-						<Button asChild>
-							<Link
-								to="/"
-								onClick={(e) => {
-									e.preventDefault()
-									window.history.back()
-								}}
-							>
-								Go Back
-							</Link>
-						</Button>
-					)}
-				</CardFooter>
-			</Card>
+
+						{isRoot ? (
+							<Button asChild>
+								<Link to="/">Go Home</Link>
+							</Button>
+						) : (
+							<Button asChild>
+								<Link
+									to="/"
+									onClick={(e) => {
+										e.preventDefault()
+										window.history.back()
+									}}
+								>
+									Go Back
+								</Link>
+							</Button>
+						)}
+					</div>
+				</EmptyContent>
+			</Empty>
 		</main>
 	)
 }
@@ -92,43 +93,42 @@ export function DashboardErrorBoundary({ error }: ErrorComponentProps) {
 
 	return (
 		<div className="h-full grid place-items-center">
-			<Card className="mx-auto max-w-sm w-full">
-				<CardHeader>
-					<h1 className="text-center font-semibold leading-none tracking-tight text-[6rem]">
-						Server Error
-					</h1>
-					<CardDescription className="text-center">
+			<Empty>
+				<EmptyHeader>
+					<EmptyMedia variant="icon">
+						<ServerCrashIcon />
+					</EmptyMedia>
+					<EmptyTitle className="font-bold text-2xl">Server Error</EmptyTitle>
+					<EmptyDescription className="text-nowrap">
 						We apologize for the inconvenience. <br /> Please try again later.
-					</CardDescription>
-				</CardHeader>
-
-				<CardContent>
+					</EmptyDescription>
+				</EmptyHeader>
+				<EmptyContent>
 					<ErrorComponent error={error} />
-				</CardContent>
-
-				<CardFooter className="md:gap-16 sm:gap-8 gap-4 justify-between">
-					<Button
-						onClick={() => {
-							void router.invalidate()
-						}}
-						variant="outline"
-					>
-						Try again
-					</Button>
-
-					<Button asChild>
-						<Link
-							to="/app"
-							onClick={(e) => {
-								e.preventDefault()
-								window.history.back()
+					<div className="flex gap-8">
+						<Button
+							onClick={() => {
+								void router.invalidate()
 							}}
+							variant="outline"
 						>
-							Go Back
-						</Link>
-					</Button>
-				</CardFooter>
-			</Card>
+							Try again
+						</Button>
+
+						<Button asChild>
+							<Link
+								to="/app"
+								onClick={(e) => {
+									e.preventDefault()
+									window.history.back()
+								}}
+							>
+								Go Back
+							</Link>
+						</Button>
+					</div>
+				</EmptyContent>
+			</Empty>
 		</div>
 	)
 }
