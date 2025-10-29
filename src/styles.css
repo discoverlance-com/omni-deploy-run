@@ -134,12 +134,12 @@ code {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans scroll-smooth antialiased;
   }
 
   /* Custom scrollbar styling. From @shadcn-ui apps/www */
   ::-webkit-scrollbar {
-    width: 5px;
+    width: 15px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
@@ -149,7 +149,7 @@ code {
     border-radius: 5px;
   }
   * {
-    scrollbar-width: thin;
+    scrollbar-width: auto;
     scrollbar-color: hsl(var(--border)) transparent;
   }
 

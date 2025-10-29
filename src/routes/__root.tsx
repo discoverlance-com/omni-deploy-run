@@ -11,7 +11,7 @@ import '@fontsource-variable/roboto'
 
 import { DefaultErrorBoundary } from '@/components/layout/error-boundary'
 import { DefaultNotFound } from '@/components/layout/not-found'
-import Header from '../components/Header'
+import { siteInfo } from '@/config/site'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import StoreDevtools from '../lib/demo-store-devtools'
 import appCss from '../styles.css?url'
@@ -31,13 +31,45 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: 'width=device-width, initial-scale=1',
 			},
 			{
-				title: 'TanStack Start Starter',
+				name: 'theme-color',
+				content: '#f54a00',
+			},
+			{
+				name: 'mobile-web-app-capable',
+				content: 'yes',
+			},
+			{
+				name: 'apple-mobile-web-app-title',
+				content: siteInfo.title,
+			},
+			{
+				name: 'apple-mobile-web-app-status-bar-style',
+				content: 'default',
+			},
+			{
+				name: 'application-name',
+				content: siteInfo.title,
+			},
+			{
+				title: siteInfo.title,
 			},
 		],
 		links: [
 			{
 				rel: 'stylesheet',
 				href: appCss,
+			},
+			{
+				rel: 'manifest',
+				href: '/manifest.json',
+			},
+			{
+				rel: 'icon',
+				href: '/favicons/favicon-16x16.png',
+			},
+			{
+				rel: 'icon',
+				href: '/favicons/apple-icon.png',
 			},
 		],
 	}),
@@ -58,21 +90,22 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
-				<Header />
 				{children}
-				<TanStackDevtools
-					config={{
-						position: 'bottom-right',
-					}}
-					plugins={[
-						{
-							name: 'Tanstack Router',
-							render: <TanStackRouterDevtoolsPanel />,
-						},
-						StoreDevtools,
-						TanStackQueryDevtools,
-					]}
-				/>
+				{import.meta.env.DEV && (
+					<TanStackDevtools
+						config={{
+							position: 'bottom-right',
+						}}
+						plugins={[
+							{
+								name: 'Tanstack Router',
+								render: <TanStackRouterDevtoolsPanel />,
+							},
+							StoreDevtools,
+							TanStackQueryDevtools,
+						]}
+					/>
+				)}
 				<Scripts />
 			</body>
 		</html>

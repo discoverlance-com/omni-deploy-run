@@ -1,5 +1,4 @@
 import { Link, useLocation } from '@tanstack/react-router'
-import { ScanSearchIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
