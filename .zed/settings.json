@@ -37,7 +37,12 @@
       }
     },
     "JSONC": { "formatter": { "language_server": { "name": "biome" } } },
-    "CSS": { "formatter": { "language_server": { "name": "biome" } } },
+    "CSS": {
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      }
+    },
     "GraphQL": { "formatter": { "language_server": { "name": "biome" } } }
   },
   "format_on_save": "on",

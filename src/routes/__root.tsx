@@ -1,20 +1,20 @@
+import { TanStackDevtools } from '@tanstack/react-devtools'
+import type { QueryClient } from '@tanstack/react-query'
 import {
+	createRootRouteWithContext,
 	HeadContent,
 	Scripts,
-	createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+import '@fontsource-variable/roboto-mono'
+import '@fontsource-variable/roboto'
 
+import { DefaultErrorBoundary } from '@/components/layout/error-boundary'
+import { DefaultNotFound } from '@/components/layout/not-found'
 import Header from '../components/Header'
-
-import StoreDevtools from '../lib/demo-store-devtools'
-
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
-
+import StoreDevtools from '../lib/demo-store-devtools'
 import appCss from '../styles.css?url'
-
-import type { QueryClient } from '@tanstack/react-query'
 
 interface MyRouterContext {
 	queryClient: QueryClient
@@ -43,6 +43,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 	}),
 
 	shellComponent: RootDocument,
+	notFoundComponent: () => {
+		return <DefaultNotFound />
+	},
+	errorComponent: (props) => {
+		return <DefaultErrorBoundary {...props} />
+	},
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
