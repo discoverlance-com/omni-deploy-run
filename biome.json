@@ -37,7 +37,8 @@
 			"recommended": true,
 			"correctness": {
 				"noUnknownTypeSelector": "off",
-				"noUnknownPseudoClass": "warn"
+				"noUnknownPseudoClass": "warn",
+				"noChildrenProp": "off"
 			},
 			"style": {
 				"noInferrableTypes": "error",
