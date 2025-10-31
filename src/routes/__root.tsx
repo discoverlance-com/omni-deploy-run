@@ -6,7 +6,9 @@ import {
 	Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+//@ts-ignore
 import '@fontsource-variable/roboto-mono'
+//@ts-ignore
 import '@fontsource-variable/roboto'
 
 import { DefaultErrorBoundary } from '@/components/layout/error-boundary'
