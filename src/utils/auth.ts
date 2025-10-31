@@ -13,6 +13,30 @@ export const sessionMiddleware = createMiddleware({ type: 'request' }).server(
 	},
 )
 
+export const requireAuthentedUserMiddleware = createMiddleware({
+	type: 'request',
+})
+	.middleware([sessionMiddleware])
+	.server(({ next, context }) => {
+		if (!context.session) {
+			throw redirect({ to: '/' })
+		}
+
+		return next({ context: { session: context.session } })
+	})
+
+export const requireAnonymousUserMiddleware = createMiddleware({
+	type: 'request',
+})
+	.middleware([sessionMiddleware])
+	.server(async ({ next, context }) => {
+		if (context.session) {
+			throw redirect({ to: '/app' })
+		}
+
+		return next()
+	})
+
 export const requireAuthentedUser = createServerFn()
 	.middleware([sessionMiddleware])
 	.handler(async ({ context }) => {

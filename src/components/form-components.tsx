@@ -196,7 +196,7 @@ export function CustomField({
 	labelProps,
 	fieldProps,
 }: {
-	labelProps: React.LabelHTMLAttributes<HTMLLabelElement>
+	labelProps?: React.LabelHTMLAttributes<HTMLLabelElement>
 	children: (props: {
 		id: string
 		'aria-describedby'?: string
@@ -221,7 +221,7 @@ export function CustomField({
 
 	return (
 		<Field {...fieldProps} data-invalid={isInvalid}>
-			<FieldLabel htmlFor={id} {...labelProps} />
+			{labelProps && <FieldLabel htmlFor={id} {...labelProps} />}
 			{children({
 				id,
 				'aria-describedby': ariaDescribedBy,
