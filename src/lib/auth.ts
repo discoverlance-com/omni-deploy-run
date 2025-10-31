@@ -1,4 +1,5 @@
 import { betterAuth } from 'better-auth'
+import { admin, lastLoginMethod } from 'better-auth/plugins'
 import { passkey } from 'better-auth/plugins/passkey'
 
 import { siteInfo } from '@/config/site'
@@ -16,11 +17,13 @@ export const auth = betterAuth({
 				residentKey: 'preferred',
 			},
 		}),
+		lastLoginMethod({}),
+		admin(),
 	],
 	emailAndPassword: {
 		enabled: true,
 		minPasswordLength: 12,
-		autoSignIn: true,
+		autoSignIn: false,
 	},
 	account: {
 		accountLinking: {

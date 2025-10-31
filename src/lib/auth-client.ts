@@ -1,4 +1,8 @@
-import { passkeyClient } from 'better-auth/client/plugins'
+import {
+	lastLoginMethodClient,
+	passkeyClient,
+	adminClient,
+} from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
 
@@ -10,7 +14,7 @@ export const authClient = createAuthClient({
 			}
 		},
 	},
-	plugins: [passkeyClient()],
+	plugins: [passkeyClient(), lastLoginMethodClient(), adminClient()],
 })
 
-export const { signIn, signUp, useSession } = createAuthClient()
+export const { signIn, signUp, useSession, signOut } = authClient
