@@ -11,6 +11,7 @@ import '@fontsource-variable/roboto'
 
 import { DefaultErrorBoundary } from '@/components/layout/error-boundary'
 import { DefaultNotFound } from '@/components/layout/not-found'
+import { Toaster } from '@/components/ui/sonner'
 import { siteInfo } from '@/config/site'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import StoreDevtools from '../lib/demo-store-devtools'
@@ -106,6 +107,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						]}
 					/>
 				)}
+				<Toaster position="top-right" duration={4000} closeButton />
 				<Scripts />
 			</body>
 		</html>

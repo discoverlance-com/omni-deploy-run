@@ -10,8 +10,14 @@ import {
 	InputGroupInput,
 } from '@/components/ui/input-group'
 import { siteInfo } from '@/config/site'
+import { requireAnonymousUser } from '@/utils/auth'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+	async beforeLoad() {
+		await requireAnonymousUser()
+	},
+	component: App,
+})
 
 function App() {
 	return (
