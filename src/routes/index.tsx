@@ -1,25 +1,123 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { AtSignIcon, KeyRoundIcon } from 'lucide-react'
+import { useStore } from '@tanstack/react-form'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { AtSignIcon, KeyIcon, KeyRoundIcon } from 'lucide-react'
+import { useTransition } from 'react'
+import { toast } from 'sonner'
+import z from 'zod/v4'
 
 import { FloatingPaths } from '@/components/floating-paths'
+import { Form } from '@/components/form-components'
 import { Logo } from '@/components/shared/logo'
 import { Button } from '@/components/ui/button'
+import { FieldGroup } from '@/components/ui/field'
 import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
 } from '@/components/ui/input-group'
+import { Spinner } from '@/components/ui/spinner'
 import { siteInfo } from '@/config/site'
+import { getOnboarding } from '@/database/onboarding'
+import { authClient, signIn } from '@/lib/auth-client'
+import { useAppForm } from '@/lib/form'
+import { safeRedirect } from '@/lib/safe-redirect'
 import { requireAnonymousUser } from '@/utils/auth'
 
+const searchParams = z.object({
+	callbackUrl: z
+		.string()
+		.default('/app')
+		.catch('/app')
+		.transform((v) => safeRedirect(v, '/app')),
+})
+
 export const Route = createFileRoute('/')({
+	validateSearch: searchParams,
+	head: () => ({
+		meta: [{ title: `Signin - ${siteInfo.title}` }],
+	}),
 	async beforeLoad() {
 		await requireAnonymousUser()
+
+		// make sure user onboards
+		const onboarding = await getOnboarding()
+
+		if (onboarding) {
+			if (!onboarding.is_app_setup_complete) {
+				throw redirect({ to: '/onboarding' })
+			}
+		} else {
+			throw redirect({ to: '/onboarding' })
+		}
 	},
 	component: App,
 })
 
+const loginFormSchema = z.object({
+	email: z
+		.email({ message: 'Email must be a valid email address' })
+		.min(1, 'Email is required'),
+	password: z.string().min(1, 'Password is required'),
+	rememberMe: z.boolean(),
+})
+
 function App() {
+	const navigate = Route.useNavigate()
+	const [isPendingTransition, startTransition] = useTransition()
+	const search = Route.useSearch()
+
+	const form = useAppForm({
+		validators: {
+			onSubmit: loginFormSchema,
+		},
+		defaultValues: {
+			email: '',
+			password: '',
+			rememberMe: false,
+		},
+		async onSubmit({ value }) {
+			await signIn.email({
+				email: value.email,
+				password: value.password,
+				rememberMe: value.rememberMe,
+				callbackURL: search.callbackUrl,
+				fetchOptions: {
+					onSuccess(ctx) {
+						toast.success(
+							`Welcome to ${siteInfo.title} with Firebase, ${ctx.data?.user?.name}`,
+						)
+						navigate({ to: '/app' })
+					},
+					onError: ({ error }) => {
+						toast.error(error.message || 'An error occurred')
+					},
+				},
+			})
+		},
+	})
+
+	console.log({ form: form.getAllErrors() })
+
+	const isFormSubmitting = useStore(form.store, (state) => state.isSubmitting)
+
+	async function handleSignInWithPasskey() {
+		startTransition(async () => {
+			await authClient.signIn.passkey({
+				fetchOptions: {
+					onSuccess(ctx) {
+						toast.success(
+							`Welcome to ${siteInfo.title} with Firebase, ${ctx.data?.user?.name}`,
+						)
+						navigate({ to: '/app' })
+					},
+					onError: ({ error }) => {
+						toast.error(error.message || 'An error occurred')
+					},
+				},
+			})
+		})
+	}
+
 	return (
 		<main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
 			<div className="relative hidden h-full flex-col border-r bg-secondary p-10 lg:flex dark:bg-secondary/20">
@@ -56,60 +154,139 @@ function App() {
 							login to your account.
 						</p>
 					</div>
-					<div className="space-y-2">
-						<Button className="w-full" size="lg" type="button">
-							<GoogleIcon />
-							Continue with Google
-						</Button>
-					</div>
 
-					<div className="flex w-full items-center justify-center">
-						<div className="h-px w-full bg-border" />
-						<span className="px-2 text-muted-foreground text-xs">OR</span>
-						<div className="h-px w-full bg-border" />
-					</div>
+					<Form
+						onSubmit={() => {
+							void form.handleSubmit()
+						}}
+					>
+						<div className="space-y-2 mb-4">
+							<Button
+								className="w-full relative"
+								size="lg"
+								type="button"
+								onClick={handleSignInWithPasskey}
+								disabled={isPendingTransition || isFormSubmitting}
+							>
+								{isPendingTransition ? <Spinner /> : <KeyIcon size={16} />}
+								Continue with Passkey
+								{authClient.isLastUsedLoginMethod('passkey') && (
+									<LastUsedIndicator />
+								)}
+							</Button>
+						</div>
 
-					<form className="space-y-4">
-						<p className="text-start text-muted-foreground text-xs">
+						<div className="flex w-full items-center justify-center mb-4">
+							<div className="h-px w-full bg-border" />
+							<span className="px-2 text-muted-foreground text-xs">OR</span>
+							<div className="h-px w-full bg-border" />
+						</div>
+						<p className="text-start text-muted-foreground text-xs mb-2">
 							Sign in with your email address
 						</p>
-						<InputGroup>
-							<InputGroupInput
-								placeholder="your.email@example.com"
-								type="email"
+						<FieldGroup className="gap-4">
+							<form.AppField
+								name="email"
+								children={(field) => {
+									return (
+										<field.CustomField
+											labelProps={{}}
+											children={(props) => {
+												return (
+													<InputGroup>
+														<InputGroupInput
+															placeholder="your.email@example.com"
+															type="email"
+															required
+															autoComplete="email webauthn"
+															id={props.id}
+															name={field.name}
+															onChange={(e) => {
+																field.handleChange(e.target.value)
+															}}
+															value={field.state.value}
+															onBlur={field.handleBlur}
+															aria-describedby={props['aria-describedby']}
+															aria-invalid={props['aria-invalid']}
+														/>
+														<InputGroupAddon align="inline-start">
+															<AtSignIcon />
+														</InputGroupAddon>
+													</InputGroup>
+												)
+											}}
+										/>
+									)
+								}}
 							/>
-							<InputGroupAddon align="inline-start">
-								<AtSignIcon />
-							</InputGroupAddon>
-						</InputGroup>
 
-						<InputGroup>
-							<InputGroupAddon align="inline-start">
-								<KeyRoundIcon />
-							</InputGroupAddon>
-							<InputGroupInput placeholder="Your password" type="password" />
-						</InputGroup>
+							<form.AppField
+								name="password"
+								children={(field) => {
+									return (
+										<field.CustomField
+											labelProps={{}}
+											children={(props) => {
+												return (
+													<InputGroup>
+														<InputGroupAddon align="inline-start">
+															<KeyRoundIcon />
+														</InputGroupAddon>
+														<InputGroupInput
+															placeholder="Your password"
+															type="password"
+															autoComplete="current-password webauthn"
+															id={props.id}
+															name={field.name}
+															onChange={(e) => {
+																field.handleChange(e.target.value)
+															}}
+															onBlur={field.handleBlur}
+															value={field.state.value}
+															aria-describedby={props['aria-describedby']}
+															aria-invalid={props['aria-invalid']}
+														/>
+													</InputGroup>
+												)
+											}}
+										/>
+									)
+								}}
+							/>
 
-						<Button className="w-full" type="button">
-							Continue With Email
-						</Button>
-					</form>
+							<form.AppField
+								name="rememberMe"
+								children={(field) => {
+									return (
+										<field.CheckboxField
+											labelProps={{
+												children: 'Remember Me',
+												className: 'font-normal',
+											}}
+											checkboxProps={{}}
+										/>
+									)
+								}}
+							/>
+						</FieldGroup>
+
+						<form.AppForm>
+							<form.SubscribeButton className="mt-4 w-full relative">
+								Continue With Email{' '}
+								{authClient.isLastUsedLoginMethod('email') && (
+									<LastUsedIndicator />
+								)}
+							</form.SubscribeButton>
+						</form.AppForm>
+					</Form>
 				</div>
 			</div>
 		</main>
 	)
 }
 
-const GoogleIcon = (props: React.ComponentProps<'svg'>) => (
-	<svg
-		fill="currentColor"
-		viewBox="0 0 24 24"
-		xmlns="http://www.w3.org/2000/svg"
-		{...props}
-	>
-		<title>Google Icon</title>
-		<g>
-			<path d="M12.479,14.265v-3.279h11.049c0.108,0.571,0.164,1.247,0.164,1.979c0,2.46-0.672,5.502-2.84,7.669   C18.744,22.829,16.051,24,12.483,24C5.869,24,0.308,18.613,0.308,12S5.869,0,12.483,0c3.659,0,6.265,1.436,8.223,3.307L18.392,5.62   c-1.404-1.317-3.307-2.341-5.913-2.341C7.65,3.279,3.873,7.171,3.873,12s3.777,8.721,8.606,8.721c3.132,0,4.916-1.258,6.059-2.401   c0.927-0.927,1.537-2.251,1.777-4.059L12.479,14.265z" />
-		</g>
-	</svg>
+const LastUsedIndicator = () => (
+	<span className="ml-auto absolute top-0 right-0 px-2 py-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-md font-medium">
+		Last Used
+	</span>
 )
