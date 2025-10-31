@@ -20,8 +20,6 @@ import {
 } from '@/components/ui/input-group'
 import { siteInfo } from '@/config/site'
 import { getOnboarding } from '@/database/onboarding'
-import { authClient } from '@/lib/auth-client'
-import { getFirestoreClient } from '@/lib/firestore-client'
 import { useAppForm } from '@/lib/form'
 import { handleUserOnboardingForm } from '@/lib/server-fns/onboarding'
 import { requireAnonymousUser } from '@/utils/auth'

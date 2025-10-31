@@ -1,7 +1,7 @@
 import {
+	adminClient,
 	lastLoginMethodClient,
 	passkeyClient,
-	adminClient,
 } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
