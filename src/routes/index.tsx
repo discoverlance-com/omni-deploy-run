@@ -89,8 +89,6 @@ function App() {
 		},
 	})
 
-	console.log({ form: form.getAllErrors() })
-
 	const isFormSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
 	async function handleSignInWithPasskey() {
