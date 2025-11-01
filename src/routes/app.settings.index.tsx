@@ -2,9 +2,9 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { siteInfo } from '@/config/site'
 
-export const Route = createFileRoute('/app/')({
+export const Route = createFileRoute('/app/settings/')({
 	head: () => ({
-		meta: [{ title: `Dashboard - ${siteInfo.title}` }],
+		meta: [{ title: `Settings - ${siteInfo.title}` }],
 	}),
 	component: RouteComponent,
 })
