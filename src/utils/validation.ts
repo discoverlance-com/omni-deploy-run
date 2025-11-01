@@ -15,3 +15,11 @@ export const onboardingFormSchema = z.object({
 		.min(3, 'Name is required')
 		.max(150, 'Name must not be more than 150 characters'),
 })
+
+export const loginFormSchema = z.object({
+	email: z
+		.email({ message: 'Email must be a valid email address' })
+		.min(1, 'Email is required'),
+	password: z.string().min(1, 'Password is required'),
+	rememberMe: z.boolean(),
+})

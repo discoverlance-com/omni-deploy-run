@@ -22,6 +22,7 @@ import { authClient, signIn } from '@/lib/auth-client'
 import { useAppForm } from '@/lib/form'
 import { safeRedirect } from '@/lib/safe-redirect'
 import { requireAnonymousUser } from '@/utils/auth'
+import { loginFormSchema } from '@/utils/validation'
 
 const searchParams = z.object({
 	callbackUrl: z
@@ -51,14 +52,6 @@ export const Route = createFileRoute('/')({
 		}
 	},
 	component: App,
-})
-
-const loginFormSchema = z.object({
-	email: z
-		.email({ message: 'Email must be a valid email address' })
-		.min(1, 'Email is required'),
-	password: z.string().min(1, 'Password is required'),
-	rememberMe: z.boolean(),
 })
 
 function App() {
@@ -155,32 +148,33 @@ function App() {
 						</p>
 					</div>
 
+					<div className="space-y-2">
+						<Button
+							className="w-full relative"
+							size="lg"
+							type="button"
+							onClick={handleSignInWithPasskey}
+							disabled={isPendingTransition || isFormSubmitting}
+						>
+							{isPendingTransition ? <Spinner /> : <KeyIcon size={16} />}
+							Continue with Passkey
+							{authClient.isLastUsedLoginMethod('passkey') && (
+								<LastUsedIndicator />
+							)}
+						</Button>
+					</div>
+
+					<div className="flex w-full items-center justify-center">
+						<div className="h-px w-full bg-border" />
+						<span className="px-2 text-muted-foreground text-xs">OR</span>
+						<div className="h-px w-full bg-border" />
+					</div>
+
 					<Form
 						onSubmit={() => {
 							void form.handleSubmit()
 						}}
 					>
-						<div className="space-y-2 mb-4">
-							<Button
-								className="w-full relative"
-								size="lg"
-								type="button"
-								onClick={handleSignInWithPasskey}
-								disabled={isPendingTransition || isFormSubmitting}
-							>
-								{isPendingTransition ? <Spinner /> : <KeyIcon size={16} />}
-								Continue with Passkey
-								{authClient.isLastUsedLoginMethod('passkey') && (
-									<LastUsedIndicator />
-								)}
-							</Button>
-						</div>
-
-						<div className="flex w-full items-center justify-center mb-4">
-							<div className="h-px w-full bg-border" />
-							<span className="px-2 text-muted-foreground text-xs">OR</span>
-							<div className="h-px w-full bg-border" />
-						</div>
 						<p className="text-start text-muted-foreground text-xs mb-2">
 							Sign in with your email address
 						</p>
