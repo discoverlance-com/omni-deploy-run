@@ -112,6 +112,7 @@ export function TextField({
 					}
 					onChange?.(e)
 				}}
+				name={field.name}
 				onBlur={(e) => {
 					field.handleBlur()
 
@@ -167,6 +168,7 @@ export function TextAreaField({
 		<Field {...fieldProps} data-invalid={isInvalid}>
 			<FieldLabel htmlFor={id} {...labelProps} />
 			<ShadcnTextarea
+				name={field.name}
 				onChange={(e) => {
 					field.handleChange(e.target.value)
 					onChange?.(e)
@@ -352,6 +354,7 @@ export function SliderField({
 				<FieldDescription id={helperTextId}>{helperText}</FieldDescription>
 			)}
 			<ShadcnSlider
+				name={field.name}
 				onBlur={(e) => {
 					field.handleBlur()
 					onBlur?.(e)
