@@ -21,6 +21,7 @@ const refreshAdapter = async (betterAuthOptions: BetterAuthOptions) => {
 
 /**
  * Cleanup function to remove all rows from the database.
+ * BE CAREFUL IF YOU HAVE ITEMS ALREADY, THIS WILL DELETE THEM
  */
 const cleanup = async (betterAuthOptions: BetterAuthOptions) => {
 	const start = performance.now()
@@ -49,7 +50,7 @@ const cleanup = async (betterAuthOptions: BetterAuthOptions) => {
 	)
 }
 
-describe('Firestore Adapter Tests', async () => {
+describe.skip('Firestore Adapter Tests', async () => {
 	afterAll(async () => {
 		await cleanup({})
 	}, 20000)
