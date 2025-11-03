@@ -40,6 +40,9 @@
 				"noUnknownPseudoClass": "warn",
 				"noChildrenProp": "off"
 			},
+			"suspicious": {
+				"noArrayIndexKey": "warn"
+			},
 			"style": {
 				"noInferrableTypes": "error",
 				"noParameterAssign": "error",
