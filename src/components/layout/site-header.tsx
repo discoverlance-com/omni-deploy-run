@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useSidebar } from '@/components/ui/sidebar'
 import { siteInfo } from '@/config/site'
+import { ModeToggle } from '../mode-toggle'
 
 export function SiteHeader() {
 	const { toggleSidebar } = useSidebar()
@@ -44,7 +45,8 @@ export function SiteHeader() {
 						</BreadcrumbItem>
 					</BreadcrumbList>
 				</Breadcrumb>
-				<div className="w-full sm:ml-auto sm:w-auto">
+				<div className="w-full sm:ml-auto sm:w-auto space-x-4">
+					<ModeToggle />
 					<UserProfileDropdown />
 				</div>
 			</div>

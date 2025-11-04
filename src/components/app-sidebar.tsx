@@ -1,5 +1,12 @@
 import { Link } from '@tanstack/react-router'
-import { FolderIcon, Home, LinkIcon, RocketIcon, Settings2 } from 'lucide-react'
+import {
+	AppWindowIcon,
+	FolderIcon,
+	Home,
+	LinkIcon,
+	RocketIcon,
+	Settings2,
+} from 'lucide-react'
 import type * as React from 'react'
 
 import { NavMain } from '@/components/layout/nav-main'
@@ -22,9 +29,9 @@ const data = {
 			icon: Home,
 		},
 		{
-			title: 'Projects',
-			url: '/app/projects',
-			icon: FolderIcon,
+			title: 'Applications',
+			url: '/app/applications',
+			icon: AppWindowIcon,
 		},
 		{
 			title: 'Connections',

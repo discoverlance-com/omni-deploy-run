@@ -15,6 +15,9 @@ import { DefaultErrorBoundary } from '@/components/layout/error-boundary'
 import { DefaultNotFound } from '@/components/layout/not-found'
 import { Toaster } from '@/components/ui/sonner'
 import { siteInfo } from '@/config/site'
+import { useStableValue } from '@/hooks/use-stable-value'
+import { useTheme } from '@/hooks/use-theme'
+import { themeQueryOptions } from '@/utils/theme'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import StoreDevtools from '../lib/demo-store-devtools'
 import appCss from '../styles.css?url'
@@ -77,6 +80,15 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		],
 	}),
 
+	async loader({ context }) {
+		const result = await context.queryClient.ensureQueryData(
+			themeQueryOptions(),
+		)
+		return {
+			theme: result.theme,
+			systemTheme: result.systemTheme,
+		}
+	},
 	shellComponent: RootDocument,
 	notFoundComponent: () => {
 		return <DefaultNotFound />
@@ -87,8 +99,21 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+	const rootData = Route.useLoaderData()
+
+	useTheme()
+
+	const initialThemeData = useStableValue(rootData)
+
 	return (
-		<html lang="en">
+		<html
+			lang="en"
+			className={
+				initialThemeData.theme === 'system'
+					? (initialThemeData?.systemTheme ?? '')
+					: initialThemeData.theme
+			}
+		>
 			<head>
 				<HeadContent />
 			</head>

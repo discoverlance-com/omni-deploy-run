@@ -40,6 +40,48 @@ export const projectSchema = z.object({
 
 export type Project = z.Infer<typeof projectSchema>
 
+export const applicationSchema = z.object({
+	id: z.string().optional(),
+	name: z
+		.string('Application name must be text')
+		.min(1, 'Application name is required')
+		.max(100, 'Application name must not be more than 100 characters'),
+	description: z.string('Application description must be text').optional(),
+	tags: z
+		.array(z.string().min(1, 'Tag is required'))
+		.min(1, 'You must add at least 1 tag')
+		.max(5, 'You cannot add more than 5 tags'),
+	last_deployment_status: z.enum(['successful', 'pending', 'failed']),
+	repository: z.string().min(1, 'Repository is required'),
+	connection_id: z.string().min(1, 'Connection ID is required'),
+	url: z.url().optional(),
+	last_deployed_at: z.date().optional(),
+	updated_at: z.date(),
+	created_at: z.date(),
+})
+
+export type Application = z.Infer<typeof applicationSchema>
+
+export const themeSchema = z.object({
+	redirectTo: z
+		.string()
+		.optional()
+		.refine(
+			(val) => {
+				if (val) {
+					return val.startsWith('/app')
+				}
+				return true
+			},
+			{
+				error: 'Invalid redirect url',
+			},
+		),
+	theme: z.enum(['light', 'dark', 'system']),
+	systemTheme: z.enum(['light', 'dark']).optional(),
+})
+export type Theme = z.Infer<typeof themeSchema>['theme']
+
 export function maybeHandleFormZodError<T extends object>(
 	error: unknown,
 	formValues: T,
