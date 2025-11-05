@@ -13,11 +13,12 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OnboardingIndexRouteImport } from './routes/onboarding.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as AppConnectionsRouteImport } from './routes/app.connections'
 import { Route as AppSettingsIndexRouteImport } from './routes/app.settings.index'
 import { Route as AppProjectsIndexRouteImport } from './routes/app.projects.index'
 import { Route as AppProfileIndexRouteImport } from './routes/app.profile.index'
+import { Route as AppConnectionsIndexRouteImport } from './routes/app.connections.index'
 import { Route as AppApplicationsIndexRouteImport } from './routes/app.applications.index'
+import { Route as AppConnectionsCreateRouteImport } from './routes/app.connections.create'
 import { Route as AppApplicationsCreateRouteImport } from './routes/app.applications.create'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as AppProjectsProjectIdIndexRouteImport } from './routes/app.projects.$projectId.index'
@@ -42,11 +43,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppConnectionsRoute = AppConnectionsRouteImport.update({
-  id: '/connections',
-  path: '/connections',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
@@ -62,9 +58,19 @@ const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
   path: '/profile/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConnectionsIndexRoute = AppConnectionsIndexRouteImport.update({
+  id: '/connections/',
+  path: '/connections/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppApplicationsIndexRoute = AppApplicationsIndexRouteImport.update({
   id: '/applications/',
   path: '/applications/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConnectionsCreateRoute = AppConnectionsCreateRouteImport.update({
+  id: '/connections/create',
+  path: '/connections/create',
   getParentRoute: () => AppRoute,
 } as any)
 const AppApplicationsCreateRoute = AppApplicationsCreateRouteImport.update({
@@ -87,12 +93,13 @@ const AppProjectsProjectIdIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/app/connections': typeof AppConnectionsRoute
   '/app/': typeof AppIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/applications/create': typeof AppApplicationsCreateRoute
+  '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications': typeof AppApplicationsIndexRoute
+  '/app/connections': typeof AppConnectionsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
   '/app/projects': typeof AppProjectsIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
@@ -100,12 +107,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app/connections': typeof AppConnectionsRoute
   '/app': typeof AppIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/applications/create': typeof AppApplicationsCreateRoute
+  '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications': typeof AppApplicationsIndexRoute
+  '/app/connections': typeof AppConnectionsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
   '/app/projects': typeof AppProjectsIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
@@ -115,12 +123,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/app/connections': typeof AppConnectionsRoute
   '/app/': typeof AppIndexRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/applications/create': typeof AppApplicationsCreateRoute
+  '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications/': typeof AppApplicationsIndexRoute
+  '/app/connections/': typeof AppConnectionsIndexRoute
   '/app/profile/': typeof AppProfileIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
@@ -131,12 +140,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
-    | '/app/connections'
     | '/app/'
     | '/onboarding'
     | '/api/auth/$'
     | '/app/applications/create'
+    | '/app/connections/create'
     | '/app/applications'
+    | '/app/connections'
     | '/app/profile'
     | '/app/projects'
     | '/app/settings'
@@ -144,12 +154,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app/connections'
     | '/app'
     | '/onboarding'
     | '/api/auth/$'
     | '/app/applications/create'
+    | '/app/connections/create'
     | '/app/applications'
+    | '/app/connections'
     | '/app/profile'
     | '/app/projects'
     | '/app/settings'
@@ -158,12 +169,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
-    | '/app/connections'
     | '/app/'
     | '/onboarding/'
     | '/api/auth/$'
     | '/app/applications/create'
+    | '/app/connections/create'
     | '/app/applications/'
+    | '/app/connections/'
     | '/app/profile/'
     | '/app/projects/'
     | '/app/settings/'
@@ -207,13 +219,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/connections': {
-      id: '/app/connections'
-      path: '/connections'
-      fullPath: '/app/connections'
-      preLoaderRoute: typeof AppConnectionsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/settings/': {
       id: '/app/settings/'
       path: '/settings'
@@ -235,11 +240,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/connections/': {
+      id: '/app/connections/'
+      path: '/connections'
+      fullPath: '/app/connections'
+      preLoaderRoute: typeof AppConnectionsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/applications/': {
       id: '/app/applications/'
       path: '/applications'
       fullPath: '/app/applications'
       preLoaderRoute: typeof AppApplicationsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/connections/create': {
+      id: '/app/connections/create'
+      path: '/connections/create'
+      fullPath: '/app/connections/create'
+      preLoaderRoute: typeof AppConnectionsCreateRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/applications/create': {
@@ -267,10 +286,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppConnectionsRoute: typeof AppConnectionsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppApplicationsCreateRoute: typeof AppApplicationsCreateRoute
+  AppConnectionsCreateRoute: typeof AppConnectionsCreateRoute
   AppApplicationsIndexRoute: typeof AppApplicationsIndexRoute
+  AppConnectionsIndexRoute: typeof AppConnectionsIndexRoute
   AppProfileIndexRoute: typeof AppProfileIndexRoute
   AppProjectsIndexRoute: typeof AppProjectsIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
@@ -278,10 +298,11 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppConnectionsRoute: AppConnectionsRoute,
   AppIndexRoute: AppIndexRoute,
   AppApplicationsCreateRoute: AppApplicationsCreateRoute,
+  AppConnectionsCreateRoute: AppConnectionsCreateRoute,
   AppApplicationsIndexRoute: AppApplicationsIndexRoute,
+  AppConnectionsIndexRoute: AppConnectionsIndexRoute,
   AppProfileIndexRoute: AppProfileIndexRoute,
   AppProjectsIndexRoute: AppProjectsIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,

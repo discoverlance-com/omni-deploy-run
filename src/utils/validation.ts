@@ -62,6 +62,20 @@ export const applicationSchema = z.object({
 
 export type Application = z.Infer<typeof applicationSchema>
 
+export const connectionSchema = z.object({
+	id: z.string().optional(),
+	name: z
+		.string('Connection name must be text')
+		.min(1, 'Connection name is required')
+		.max(100, 'Connection name must not be more than 100 characters'),
+	type: z.enum(['github'], 'Connection type should be github'),
+	description: z.string('Connection description must be text').optional(),
+	updated_at: z.date(),
+	created_at: z.date(),
+})
+
+export type Connection = z.Infer<typeof connectionSchema>
+
 export const themeSchema = z.object({
 	redirectTo: z
 		.string()

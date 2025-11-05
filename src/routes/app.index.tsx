@@ -69,9 +69,9 @@ function RouteComponent() {
 			<div className="grid auto-rows-min gap-4 md:grid-cols-3">
 				<div className="bg-secondary p-6 rounded-lg border">
 					<h3 className="text-sm text-gray-700 font-medium  uppercase tracking-wider">
-						Total Projects
+						Total Git Connections
 					</h3>
-					<p className={'mt-2 text-4xl text-blue-800 font-bold'}>24</p>
+					<p className={'mt-2 text-4xl text-blue-800 font-bold'}>2</p>
 				</div>
 				<div className="bg-secondary p-6 rounded-lg border">
 					<h3 className="text-sm text-gray-700 font-medium  uppercase tracking-wider">
