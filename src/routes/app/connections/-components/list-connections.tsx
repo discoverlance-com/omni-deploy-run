@@ -17,6 +17,7 @@ import {
 	AlertTriangle,
 	CheckIcon,
 	Ellipsis,
+	GlobeIcon,
 	RefreshCwIcon,
 	SearchIcon,
 	Settings2,
@@ -416,25 +417,27 @@ export default function ListConnections() {
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<Button variant="outline" size="sm">
-										Change Location
+										Change Location <GlobeIcon />
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent className="overflow-auto">
 									<DropdownMenuLabel>List of all locations</DropdownMenuLabel>
 									<DropdownMenuSeparator />
-									<ScrollArea className="h-[400px]" type="always">
+									<ScrollArea className="h-[250px]" type="always">
 										{SUPPORTED_CLOUD_BUILD_LOCATIONS.map((location) => (
 											<DropdownMenuItem
 												key={location.value}
 												asChild
-												className="w-full"
+												className={`w-full justify-between ${locationUsed === location.value && 'text-primary'}`}
 											>
 												<Link
 													to="/app/connections"
 													search={{ location: location.value }}
 												>
 													{location.label}
-													{locationUsed === location.value && <CheckIcon />}
+													{locationUsed === location.value && (
+														<CheckIcon className="text-primary" />
+													)}
 												</Link>
 											</DropdownMenuItem>
 										))}
