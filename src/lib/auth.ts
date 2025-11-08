@@ -17,7 +17,9 @@ export const auth = betterAuth({
 				residentKey: 'preferred',
 			},
 		}),
-		lastLoginMethod({}),
+		lastLoginMethod({
+			storeInDatabase: false,
+		}),
 		admin(),
 	],
 	emailAndPassword: {

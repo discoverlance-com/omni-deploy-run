@@ -70,12 +70,11 @@ export const connectionSchema = z.object({
 	displayName: z
 		.string('Connection name must be text')
 		.min(1, 'Connection name is required')
-		.max(20, 'Connection name must not be more than 20 characters')
 		.regex(
 			/^[a-zA-Z\s_-]+$/,
 			'Connection name must only contain letters, spaces, underscores, and hyphens',
 		),
-	type: z.enum(['github'], 'Connection type should be github'),
+	type: z.enum(['github', 'gitlab', 'bitbucket'], 'Connection type is invalid'),
 	location: z.enum(
 		SUPPORTED_CLOUD_BUILD_LOCATIONS.map((location) => location.value),
 		'Location not supported',
@@ -91,6 +90,7 @@ export const connectionSchema = z.object({
 		})
 		.optional(),
 	disabled: z.boolean().optional(),
+	username: z.string().optional(),
 })
 
 export type Connection = z.Infer<typeof connectionSchema>

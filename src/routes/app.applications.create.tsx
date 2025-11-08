@@ -10,6 +10,7 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
+	CardHeading,
 	CardTitle,
 } from '@/components/ui/card'
 import {
@@ -84,10 +85,12 @@ function RouteComponent() {
 		<div className="flex flex-1 flex-col gap-4 p-4">
 			<Card>
 				<CardHeader>
-					<CardTitle>Create Application</CardTitle>
-					<CardDescription>
-						Fill in the form below to create a new application
-					</CardDescription>
+					<CardHeading>
+						<CardTitle>Create Application</CardTitle>
+						<CardDescription>
+							Fill in the form below to create a new application
+						</CardDescription>
+					</CardHeading>
 				</CardHeader>
 				<Form
 					onSubmit={() => {
@@ -139,7 +142,7 @@ function RouteComponent() {
 						</FieldGroup>
 					</CardContent>
 
-					<CardFooter className="pt-6 gap-8">
+					<CardFooter className="gap-8">
 						<Button variant="outline" type="button" asChild>
 							<Link to="/app/applications" viewTransition>
 								Cancel

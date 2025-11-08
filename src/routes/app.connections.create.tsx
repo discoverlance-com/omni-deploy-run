@@ -12,6 +12,7 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
+	CardHeading,
 	CardTitle,
 } from '@/components/ui/card'
 import {
@@ -34,6 +35,7 @@ import {
 	connectionSchema,
 	maybeHandleFormZodError,
 } from '@/utils/validation'
+import { getConnectionQueryKey } from './app/connections/-data/query-options'
 
 export const Route = createFileRoute('/app/connections/create')({
 	head: () => ({
@@ -52,6 +54,9 @@ function RouteComponent() {
 	const navigate = Route.useNavigate()
 	const createGithubConnection = useServerFn(createGithubConnectionServerFn)
 	const verifyGithubConnection = useServerFn(verifyGithubConnectionServerFn)
+	const queryClient = Route.useRouteContext({
+		select: (options) => options.queryClient,
+	})
 
 	const [installationState, setInstallationState] = useState<{
 		message?: string | null
@@ -119,6 +124,11 @@ function RouteComponent() {
 						},
 					})
 					if (response.installationState) {
+						// Invalidate connections query to refresh the list
+						await queryClient.invalidateQueries({
+							queryKey: getConnectionQueryKey(value.location),
+						})
+
 						toast.success(
 							'Github connection started, please follow the instructions to continue.',
 						)
@@ -161,10 +171,12 @@ function RouteComponent() {
 		<div className="flex flex-1 flex-col gap-4 p-4">
 			<Card>
 				<CardHeader>
-					<CardTitle>Setup Git Connection</CardTitle>
-					<CardDescription>
-						Fill in the form below to setup a new git connection
-					</CardDescription>
+					<CardHeading>
+						<CardTitle>Setup Git Connection</CardTitle>
+						<CardDescription>
+							Fill in the form below to setup a new git connection
+						</CardDescription>
+					</CardHeading>
 				</CardHeader>
 
 				{installationState ? (

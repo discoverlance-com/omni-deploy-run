@@ -127,6 +127,45 @@ export const verifyGithubConnectionServerFn = createServerFn()
 		}
 	})
 
+export const deleteGithubConnectionServerFn = createServerFn()
+	.middleware([requireAuthentedUserMiddleware])
+	.inputValidator(
+		connectionSchema.pick({
+			name: true,
+			type: true,
+			location: true,
+			displayName: true,
+		}),
+	)
+	.handler(async ({ data }) => {
+		if (data.type !== 'github') {
+			throw new Error('Only github connections are supported')
+		}
+
+		let name = data.name
+
+		if (!name) {
+			const connectionId = data.displayName
+			const projectId = await repositoryManagerClient.getProjectId()
+
+			name = `projects/${projectId}/locations/${data.location}/connections/${connectionId}`
+		}
+
+		try {
+			const [operation] = await repositoryManagerClient.deleteConnection({
+				name,
+			})
+
+			await operation.promise()
+
+			return { success: true, message: 'Connection deleted successfully' }
+		} catch (error) {
+			throw new Error(
+				`Failed to delete connection: ${(error as { message?: string })?.message}`,
+			)
+		}
+	})
+
 export const getAllConnectionsServerFn = createServerFn()
 	.middleware([requireAuthentedUserMiddleware])
 	.inputValidator(connectionSchema.pick({ location: true }).partial())
@@ -150,11 +189,13 @@ export const getAllConnectionsServerFn = createServerFn()
 					| 'name'
 					| 'displayName'
 					| 'location'
+					| 'type'
 					| 'createTime'
 					| 'updateTime'
 					| 'reconciling'
 					| 'installationState'
 					| 'disabled'
+					| 'username'
 				>
 			> = []
 
@@ -174,6 +215,28 @@ export const getAllConnectionsServerFn = createServerFn()
 					? new Date(Number(connection.updateTime.seconds) * 1000)
 					: undefined
 
+				// Determine connection type based on which config is present
+				let type: 'github' | 'gitlab' | 'bitbucket' = 'github'
+				if (connection.githubConfig) {
+					type = 'github'
+				} else if (connection.gitlabConfig) {
+					type = 'gitlab'
+				} else if (
+					connection.bitbucketDataCenterConfig ||
+					connection.bitbucketCloudConfig
+				) {
+					type = 'bitbucket'
+				}
+
+				// Extract username from authorizerCredential
+				const username =
+					connection.githubConfig?.authorizerCredential?.username ||
+					connection.gitlabConfig?.authorizerCredential?.username ||
+					connection.bitbucketDataCenterConfig?.authorizerCredential
+						?.username ||
+					connection.bitbucketCloudConfig?.authorizerCredential?.username ||
+					undefined
+
 				connections.push({
 					name: connection.name || '',
 					displayName:
@@ -181,6 +244,7 @@ export const getAllConnectionsServerFn = createServerFn()
 						connection.name?.split('/').slice(-1)[0] ||
 						'',
 					location: location || 'us-central1',
+					type,
 					createTime,
 					updateTime,
 					reconciling: connection.reconciling || false,
@@ -192,9 +256,9 @@ export const getAllConnectionsServerFn = createServerFn()
 							}
 						: undefined,
 					disabled: connection.disabled || false,
+					username,
 				})
 			}
-
 			return { connections }
 		} catch (error) {
 			console.error(error)

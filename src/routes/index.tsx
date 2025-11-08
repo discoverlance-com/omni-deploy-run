@@ -51,6 +51,9 @@ export const Route = createFileRoute('/')({
 			throw redirect({ to: '/onboarding' })
 		}
 	},
+	// async loader() {
+	// 	const lastLoginMethod = auth.api.
+	// },
 	component: App,
 })
 
@@ -58,6 +61,8 @@ function App() {
 	const navigate = Route.useNavigate()
 	const [isPendingTransition, startTransition] = useTransition()
 	const search = Route.useSearch()
+
+	const lastLoginMethod = authClient.getLastUsedLoginMethod()
 
 	const form = useAppForm({
 		validators: {
@@ -75,10 +80,7 @@ function App() {
 				rememberMe: value.rememberMe,
 				callbackURL: search.callbackUrl,
 				fetchOptions: {
-					onSuccess(ctx) {
-						toast.success(
-							`Welcome to ${siteInfo.title} with Firebase, ${ctx.data?.user?.name}`,
-						)
+					onSuccess() {
 						navigate({ to: '/app' })
 					},
 					onError: ({ error }) => {
@@ -156,9 +158,7 @@ function App() {
 						>
 							{isPendingTransition ? <Spinner /> : <KeyIcon size={16} />}
 							Continue with Passkey
-							{authClient.isLastUsedLoginMethod('passkey') && (
-								<LastUsedIndicator />
-							)}
+							{lastLoginMethod === 'passkey' && <LastUsedIndicator />}
 						</Button>
 					</div>
 
@@ -265,9 +265,7 @@ function App() {
 						<form.AppForm>
 							<form.SubscribeButton className="mt-4 w-full relative">
 								Continue With Email{' '}
-								{authClient.isLastUsedLoginMethod('email') && (
-									<LastUsedIndicator />
-								)}
+								{lastLoginMethod === 'email' && <LastUsedIndicator />}
 							</form.SubscribeButton>
 						</form.AppForm>
 					</Form>
@@ -278,7 +276,7 @@ function App() {
 }
 
 const LastUsedIndicator = () => (
-	<span className="ml-auto absolute top-0 right-0 px-2 py-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-md font-medium">
+	<span className="ml-auto absolute top-0 right-0 px-1.5 py-1 text-[0.65rem] bg-primary/20 border text-white border-white rounded-md font-medium">
 		Last Used
 	</span>
 )
