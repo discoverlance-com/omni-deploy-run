@@ -5,8 +5,6 @@ export const env = createEnv({
 	server: {
 		BETTER_AUTH_URL: z.url(),
 		BETTER_AUTH_SECRET: z.string().min(32),
-		GCP_CLIENT_EMAIL: z.string().optional(),
-		GCP_PRIVATE_KEY: z.string().optional(),
 		FIRESTORE_DATABASE_ID: z.string().min(1),
 		GCP_PROJECT_ID: z.string().optional(),
 	},
