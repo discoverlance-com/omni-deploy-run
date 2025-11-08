@@ -11,6 +11,7 @@ import '@fontsource-variable/roboto-mono'
 //@ts-expect-error
 import '@fontsource-variable/roboto'
 
+import { GlobalLoadingProgress } from '@/components/global-loading-bar'
 import { DefaultErrorBoundary } from '@/components/layout/error-boundary'
 import { DefaultNotFound } from '@/components/layout/not-found'
 import { Toaster } from '@/components/ui/sonner'
@@ -107,6 +108,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
 	return (
 		<html
+			suppressHydrationWarning
 			lang="en"
 			className={
 				initialThemeData.theme === 'system'
@@ -118,6 +120,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
+				<GlobalLoadingProgress />
 				{children}
 				{import.meta.env.DEV && (
 					<TanStackDevtools

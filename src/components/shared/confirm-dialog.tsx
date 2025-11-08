@@ -49,7 +49,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				{children}
-				<AlertDialogFooter>
+				<AlertDialogFooter className="gap-8">
 					<AlertDialogCancel disabled={isLoading}>
 						{cancelBtnText ?? 'Cancel'}
 					</AlertDialogCancel>

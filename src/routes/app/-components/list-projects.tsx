@@ -1,6 +1,5 @@
 'use client'
 
-import { useLiveQuery } from '@tanstack/react-db'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import {
 	ArrowDownAZ,
