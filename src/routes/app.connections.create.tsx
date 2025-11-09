@@ -83,16 +83,16 @@ function RouteComponent() {
 					},
 				})
 
-				setVerificationStatus({
-					status: response.status,
-					message: response.message,
-				})
+			setVerificationStatus({
+				status: response.status,
+				message: response.message,
+			})
 
-				if (response.status === 'ACTIVE') {
-					toast.success('Connection successfully verified!')
-					setTimeout(() => {
-						navigate({ to: '/app/connections' })
-					}, 2000)
+			if (response.status === 'active') {
+				toast.success('Connection successfully verified!')
+				setTimeout(() => {
+					navigate({ to: '/app/connections' })
+				}, 2000)
 				}
 			} catch (e) {
 				toast.error(
@@ -123,25 +123,23 @@ function RouteComponent() {
 							displayName: value.displayName,
 						},
 					})
-					if (response.installationState) {
-						// Invalidate connections query to refresh the list
-						await queryClient.invalidateQueries({
-							queryKey: getConnectionQueryKey(value.location),
+				if (response.installationState) {
+					// Invalidate connections query to refresh the list
+					await queryClient.invalidateQueries({
+						queryKey: getConnectionQueryKey(),
+					})
+
+				toast.success(
+					'Github connection started, please follow the instructions to continue.',
+				)
+
+					if (response.installationState.actionUri) {
+						setInstallationState({
+							actionUri: response.installationState.actionUri,
+							message: response.installationState.message,
 						})
-
-						toast.success(
-							'Github connection started, please follow the instructions to continue.',
-						)
-
-						if (response.installationState.actionUri) {
-							setInstallationState({
-								actionUri: response.installationState.actionUri,
-								message: response.installationState.message,
-							})
-							return
-						}
-
-						if (response.installationState.stage === 'COMPLETE') {
+						return
+					}						if (response.installationState.stage === 'COMPLETE') {
 							toast.success(
 								'Github connection with this name has already been successfully created!',
 							)

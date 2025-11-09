@@ -2,15 +2,12 @@ import { queryOptions } from '@tanstack/react-query'
 
 import { getAllConnectionsServerFn } from '@/lib/server-fns/connections'
 
-export const getConnectionQueryKey = (location?: string) => [
-	'connections',
-	location || 'default',
-]
+export const getConnectionQueryKey = () => ['connections']
 
-export const connectionQueryOptions = (location?: string) =>
+export const connectionQueryOptions = () =>
 	queryOptions({
-		queryKey: getConnectionQueryKey(location),
-		queryFn: () => getAllConnectionsServerFn({ data: { location } }),
+		queryKey: getConnectionQueryKey(),
+		queryFn: () => getAllConnectionsServerFn(),
 		staleTime: Number.POSITIVE_INFINITY,
 		gcTime: Number.POSITIVE_INFINITY,
 	})

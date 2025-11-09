@@ -103,6 +103,7 @@ export const connectionSchema = z.object({
 		SUPPORTED_CLOUD_BUILD_LOCATIONS.map((location) => location.value),
 		'Location not supported',
 	),
+	connectionId: z.string(),
 	createTime: z.date().optional(),
 	updateTime: z.date().optional(),
 	reconciling: z.boolean().optional(),
@@ -115,6 +116,57 @@ export const connectionSchema = z.object({
 		.optional(),
 	disabled: z.boolean().optional(),
 	username: z.string().optional(),
+	// GitHub specific config
+	githubConfig: z
+		.object({
+			authorizerCredential: z
+				.object({
+					oauthTokenSecretVersion: z.string().optional(),
+					username: z.string().optional(),
+				})
+				.optional(),
+			appInstallationId: z.string().optional(),
+			installationUri: z.string().optional(),
+		})
+		.optional(),
+	// GitLab specific config
+	gitlabConfig: z
+		.object({
+			authorizerCredential: z
+				.object({
+					userTokenSecretVersion: z.string().optional(),
+					username: z.string().optional(),
+				})
+				.optional(),
+			hostUri: z.string().optional(),
+			webhookSecretSecretVersion: z.string().optional(),
+		})
+		.optional(),
+	// Bitbucket specific config
+	bitbucketConfig: z
+		.object({
+			authorizerCredential: z
+				.object({
+					userTokenSecretVersion: z.string().optional(),
+					username: z.string().optional(),
+				})
+				.optional(),
+			hostUri: z.string().optional(),
+			webhookSecretSecretVersion: z.string().optional(),
+			readAuthorizerCredential: z
+				.object({
+					userTokenSecretVersion: z.string().optional(),
+					username: z.string().optional(),
+				})
+				.optional(),
+		})
+		.optional(),
+	// Sync status
+	status: z
+		.enum(['pending', 'active', 'error', 'action_required'])
+		.default('pending'),
+	updated_at: z.date(),
+	created_at: z.date(),
 })
 
 export type Connection = z.Infer<typeof connectionSchema>

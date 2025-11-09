@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { getRouteApi, Link } from '@tanstack/react-router'
+import { getRouteApi } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import type { Row } from '@tanstack/react-table'
 import {
@@ -15,9 +15,7 @@ import {
 } from '@tanstack/react-table'
 import {
 	AlertTriangle,
-	CheckIcon,
 	Ellipsis,
-	GlobeIcon,
 	RefreshCwIcon,
 	SearchIcon,
 	Settings2,
@@ -56,8 +54,10 @@ import {
 	InputGroupInput,
 } from '@/components/ui/input-group'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { deleteGithubConnectionServerFn } from '@/lib/server-fns/connections'
-import { SUPPORTED_CLOUD_BUILD_LOCATIONS } from '@/utils/cloud-build-locations'
+import {
+	deleteGithubConnectionServerFn,
+	syncConnectionsServerFn,
+} from '@/lib/server-fns/connections'
 import type { Connection } from '@/utils/validation'
 import {
 	connectionQueryOptions,
@@ -71,6 +71,7 @@ import {
 
 type ConnectionData = Pick<
 	Connection,
+	| 'connectionId'
 	| 'name'
 	| 'displayName'
 	| 'location'
@@ -81,6 +82,9 @@ type ConnectionData = Pick<
 	| 'installationState'
 	| 'disabled'
 	| 'username'
+	| 'status'
+	| 'updated_at'
+	| 'created_at'
 >
 
 const getConnectionIcon = (type: 'github' | 'gitlab' | 'bitbucket') => {
@@ -97,16 +101,20 @@ const getConnectionIcon = (type: 'github' | 'gitlab' | 'bitbucket') => {
 }
 
 const getStatusBadge = (
-	installationState?: { stage: string; message?: string; actionUri?: string },
-	reconciling?: boolean,
+	status?: 'pending' | 'active' | 'error' | 'action_required',
 ) => {
-	if (reconciling) {
-		return <Badge variant="outline">Pending</Badge>
+	switch (status) {
+		case 'active':
+			return <Badge variant="success">Active</Badge>
+		case 'pending':
+			return <Badge variant="outline">Pending</Badge>
+		case 'error':
+			return <Badge variant="destructive">Error</Badge>
+		case 'action_required':
+			return <Badge variant="destructive">Action Required</Badge>
+		default:
+			return <Badge variant="outline">Unknown</Badge>
 	}
-	if (installationState?.stage === 'COMPLETE') {
-		return <Badge variant="success">Active</Badge>
-	}
-	return <Badge variant="destructive">Action Required</Badge>
 }
 
 const routeApi = getRouteApi('/app/connections/')
@@ -133,16 +141,14 @@ function DeleteDialog({
 				try {
 					await deleteFn({
 						data: {
-							name: currentRow.name,
-							displayName: currentRow.displayName,
-							location: currentRow.location,
+							connectionId: currentRow.connectionId,
 							type: 'github',
 						},
 					})
 					setOpen(false)
 					toast.success('Connection deleted successfully')
 					await queryClient.invalidateQueries({
-						queryKey: getConnectionQueryKey(currentRow.location),
+						queryKey: getConnectionQueryKey(),
 					})
 				} catch (e) {
 					console.log(e)
@@ -218,18 +224,14 @@ function ActionsCell({ row }: { row: Row<ConnectionData> }) {
 }
 
 export default function ListConnections() {
-	const search = routeApi.useSearch()
 	const queryClient = routeApi.useRouteContext({
 		select: (options) => options.queryClient,
 	})
 
-	const { locationUsed } = routeApi.useLoaderData()
-
-	const { data, isLoading } = useSuspenseQuery(
-		connectionQueryOptions(locationUsed),
-	)
+	const { data, isLoading } = useSuspenseQuery(connectionQueryOptions())
 
 	const [isPending, startTransition] = useTransition()
+	const syncFn = useServerFn(syncConnectionsServerFn)
 
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -243,9 +245,18 @@ export default function ListConnections() {
 
 	const handleRefresh = () => {
 		startTransition(async () => {
-			await queryClient.invalidateQueries({
-				queryKey: getConnectionQueryKey(search.location),
-			})
+			try {
+				// First sync connections from Google Cloud to Firestore
+				await syncFn()
+				// Then invalidate the query to refresh the UI
+				await queryClient.invalidateQueries({
+					queryKey: getConnectionQueryKey(),
+				})
+				toast.success('Connections synced successfully')
+			} catch (error) {
+				console.error('Failed to sync connections:', error)
+				toast.error('Failed to sync connections. Please try again.')
+			}
 		})
 	}
 
@@ -315,11 +326,7 @@ export default function ListConnections() {
 			{
 				id: 'status',
 				header: 'Status',
-				cell: ({ row }) =>
-					getStatusBadge(
-						row.original.installationState,
-						row.original.reconciling,
-					),
+				cell: ({ row }) => getStatusBadge(row.original.status),
 				size: 120,
 				enableSorting: true,
 			},
@@ -414,37 +421,6 @@ export default function ListConnections() {
 						</CardHeading>
 
 						<CardToolbar className="max-sm:flex-wrap">
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="outline" size="sm">
-										Change Location <GlobeIcon />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent className="overflow-auto">
-									<DropdownMenuLabel>List of all locations</DropdownMenuLabel>
-									<DropdownMenuSeparator />
-									<ScrollArea className="h-[250px]" type="always">
-										{SUPPORTED_CLOUD_BUILD_LOCATIONS.map((location) => (
-											<DropdownMenuItem
-												key={location.value}
-												asChild
-												className={`w-full justify-between ${locationUsed === location.value && 'text-primary'}`}
-											>
-												<Link
-													to="/app/connections"
-													search={{ location: location.value }}
-												>
-													{location.label}
-													{locationUsed === location.value && (
-														<CheckIcon className="text-primary" />
-													)}
-												</Link>
-											</DropdownMenuItem>
-										))}
-										<ScrollBar orientation="horizontal" />
-									</ScrollArea>
-								</DropdownMenuContent>
-							</DropdownMenu>
 							<Button
 								onClick={handleRefresh}
 								disabled={isPending}

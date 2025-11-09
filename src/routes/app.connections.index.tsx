@@ -1,36 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { z } from 'zod/v4'
 
 import { Button } from '@/components/ui/button'
 import { siteInfo } from '@/config/site'
-import { getUserSettings } from '@/database/user-settings'
-import { SUPPORTED_CLOUD_BUILD_LOCATIONS } from '@/utils/cloud-build-locations'
 import ListConnections from './app/connections/-components/list-connections'
 import { connectionQueryOptions } from './app/connections/-data/query-options'
-
-const searchParamsSchema = z.object({
-	location: z
-		.enum(SUPPORTED_CLOUD_BUILD_LOCATIONS.map((loc) => loc.value))
-		.optional()
-		.catch(''),
-})
 
 export const Route = createFileRoute('/app/connections/')({
 	head: () => ({
 		meta: [{ title: `Connections - ${siteInfo.title}` }],
 	}),
-	validateSearch: searchParamsSchema,
-	loaderDeps: ({ search: { location } }) => ({ location }),
-	async loader({ context, deps: { location } }) {
-		if (!location) {
-			const settings = await getUserSettings()
-			location = settings.selected_connection_location
-		}
-		await context.queryClient.ensureQueryData(connectionQueryOptions(location))
-
-		return {
-			locationUsed: location,
-		}
+	async loader({ context }) {
+		await context.queryClient.ensureQueryData(connectionQueryOptions())
 	},
 	component: RouteComponent,
 })
