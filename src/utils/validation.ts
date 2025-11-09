@@ -4,6 +4,10 @@ import { z } from 'zod/v4'
 import type { $ZodIssue } from 'zod/v4/core'
 
 import { SUPPORTED_CLOUD_BUILD_LOCATIONS } from './cloud-build-locations'
+import {
+	SUPPORTED_CLOUD_RUN_LOCATIONS,
+	SUPPORTED_CLOUD_RUN_MEMORY_OPTIONS,
+} from './cloud-run-locations'
 
 export const onboardingFormSchema = z.object({
 	email: z
@@ -48,12 +52,32 @@ export const applicationSchema = z.object({
 		.string('Application name must be text')
 		.min(1, 'Application name is required')
 		.max(100, 'Application name must not be more than 100 characters'),
-	description: z.string('Application description must be text').optional(),
 	tags: z
 		.array(z.string().min(1, 'Tag is required'))
 		.min(1, 'You must add at least 1 tag')
 		.max(5, 'You cannot add more than 5 tags'),
 	last_deployment_status: z.enum(['successful', 'pending', 'failed']),
+	region: z.enum(
+		SUPPORTED_CLOUD_RUN_LOCATIONS.map((loc) => loc.value),
+		'Region not supported',
+	),
+	allow_public_access: z.boolean(),
+	memory: z.enum(
+		SUPPORTED_CLOUD_RUN_MEMORY_OPTIONS.map((option) => option.value),
+		'Memory selection is invalid',
+	),
+	number_of_cpus: z.enum(
+		['1', '2', '4', '8'],
+		'Number of CPUs selection is invalid',
+	),
+	service_account_id: z.string().optional(),
+	environment_variables: z.array(
+		z.object({
+			key: z.string().min(1, 'Environment variable key is required'),
+			value: z.string().min(1, 'Environment variable value is required'),
+			is_secret: z.boolean(),
+		}),
+	),
 	repository: z.string().min(1, 'Repository is required'),
 	connection_id: z.string().min(1, 'Connection ID is required'),
 	url: z.url().optional(),

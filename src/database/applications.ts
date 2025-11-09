@@ -113,10 +113,6 @@ export const createApplication = createServerFn({
 			updated_at: now,
 		}
 
-		if (data.description) {
-			docData.description = data.description
-		}
-
 		await documentRef.set(docData)
 
 		return { id: documentRef.id }
@@ -154,8 +150,6 @@ export const updateProject = createServerFn({
 		if (data.url !== undefined) updateData.url = data.url
 		if (data.connection_id !== undefined)
 			updateData.connection_id = data.connection_id
-		if (data.description !== undefined)
-			updateData.description = data.description
 
 		await documentRef.update(updateData)
 

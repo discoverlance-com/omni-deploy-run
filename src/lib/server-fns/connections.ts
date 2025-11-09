@@ -2,9 +2,9 @@ import type { google as GoogleProtos } from '@google-cloud/cloudbuild/build/prot
 import { createServerFn } from '@tanstack/react-start'
 
 import { updateUserSettings } from '@/database/user-settings'
+import { repositoryManagerClient } from '@/services/cloud-build'
 import { requireAuthentedUserMiddleware } from '@/utils/auth'
 import { type Connection, connectionSchema } from '@/utils/validation'
-import { repositoryManagerClient } from '../cloud-build'
 import { slugify } from '../utils'
 
 const getConnectionId = (name: string) => {
