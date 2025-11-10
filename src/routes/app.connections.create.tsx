@@ -83,16 +83,16 @@ function RouteComponent() {
 					},
 				})
 
-			setVerificationStatus({
-				status: response.status,
-				message: response.message,
-			})
+				setVerificationStatus({
+					status: response.status,
+					message: response.message,
+				})
 
-			if (response.status === 'active') {
-				toast.success('Connection successfully verified!')
-				setTimeout(() => {
-					navigate({ to: '/app/connections' })
-				}, 2000)
+				if (response.status === 'active') {
+					toast.success('Connection successfully verified!')
+					setTimeout(() => {
+						navigate({ to: '/app/connections' })
+					}, 2000)
 				}
 			} catch (e) {
 				toast.error(
@@ -123,23 +123,24 @@ function RouteComponent() {
 							displayName: value.displayName,
 						},
 					})
-				if (response.installationState) {
-					// Invalidate connections query to refresh the list
-					await queryClient.invalidateQueries({
-						queryKey: getConnectionQueryKey(),
-					})
-
-				toast.success(
-					'Github connection started, please follow the instructions to continue.',
-				)
-
-					if (response.installationState.actionUri) {
-						setInstallationState({
-							actionUri: response.installationState.actionUri,
-							message: response.installationState.message,
+					if (response.installationState) {
+						// Invalidate connections query to refresh the list
+						await queryClient.invalidateQueries({
+							queryKey: getConnectionQueryKey(),
 						})
-						return
-					}						if (response.installationState.stage === 'COMPLETE') {
+
+						toast.success(
+							'Github connection started, please follow the instructions to continue.',
+						)
+
+						if (response.installationState.actionUri) {
+							setInstallationState({
+								actionUri: response.installationState.actionUri,
+								message: response.installationState.message,
+							})
+							return
+						}
+						if (response.installationState.stage === 'COMPLETE') {
 							toast.success(
 								'Github connection with this name has already been successfully created!',
 							)
@@ -218,19 +219,21 @@ function RouteComponent() {
 							{verificationStatus && (
 								<Alert
 									variant={
-										verificationStatus.status === 'ACTIVE'
+										verificationStatus.status === 'active'
 											? 'default'
-											: verificationStatus.status === 'PENDING'
+											: verificationStatus.status === 'pending'
 												? 'default'
 												: 'destructive'
 									}
 								>
 									<AlertTitle>
-										{verificationStatus.status === 'ACTIVE'
+										{verificationStatus.status === 'active'
 											? 'Connection Active'
-											: verificationStatus.status === 'PENDING'
+											: verificationStatus.status === 'pending'
 												? 'Connection Pending'
-												: 'Action Required'}
+												: verificationStatus.status === 'error'
+													? 'Error'
+													: 'Action Required'}
 									</AlertTitle>
 									<AlertDescription>
 										{verificationStatus.message}
@@ -268,6 +271,7 @@ function RouteComponent() {
 															required: true,
 															maxLength: 20,
 														}}
+														helperText="A short descriptive name you want to give to the connection"
 													/>
 												)
 											}}
@@ -284,6 +288,7 @@ function RouteComponent() {
 															autoComplete: 'off',
 															required: true,
 														}}
+														helperText="The region where the connection will live. It can be the region you want to deploy your resources to or not"
 													>
 														{SUPPORTED_CLOUD_BUILD_LOCATIONS.map((location) => {
 															return (

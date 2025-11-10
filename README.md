@@ -30,6 +30,7 @@ Deploy serverless applications to Google Cloud Run with ease. A full-stack TypeS
   - Cloud Run Admin API
   - Secret Manager API
   - Cloud Firestore API
+  - Artifact Registry API
 
 ## Getting Started
 
@@ -55,6 +56,7 @@ pnpm install
    gcloud services enable run.googleapis.com
    gcloud services enable secretmanager.googleapis.com
    gcloud services enable firestore.googleapis.com
+   gcloud services enable artifactregistry.googleapis.com
    ```
 3. Create a Firestore database in your project (Native mode)
 4. Create a service account for local development:

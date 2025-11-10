@@ -75,7 +75,24 @@ export const updateConnection = createServerFn({ method: 'POST' })
 		await docRef.update(updateData)
 
 		const updatedDoc = await docRef.get()
-		return { ...updatedDoc.data(), id: updatedDoc.id } as Connection
+		const updatedData = updatedDoc.data()
+		return {
+			...updatedData,
+			id: updatedDoc.id,
+			// Convert Firestore Timestamps to JS Dates
+			created_at:
+				updatedData?.created_at?.toDate?.() || updatedData?.created_at,
+			updated_at:
+				updatedData?.updated_at?.toDate?.() || updatedData?.updated_at,
+			...(updatedData?.createTime && {
+				createTime:
+					updatedData.createTime?.toDate?.() || updatedData.createTime,
+			}),
+			...(updatedData?.updateTime && {
+				updateTime:
+					updatedData.updateTime?.toDate?.() || updatedData.updateTime,
+			}),
+		} as Connection
 	})
 
 export const getAllConnections = createServerFn({ method: 'GET' })
@@ -86,7 +103,20 @@ export const getAllConnections = createServerFn({ method: 'GET' })
 
 		const connections: Connection[] = []
 		snapshot.forEach((doc) => {
-			connections.push({ ...doc.data(), id: doc.id } as Connection)
+			const data = doc.data()
+			connections.push({
+				...data,
+				id: doc.id,
+				// Convert Firestore Timestamps to JS Dates
+				created_at: data.created_at?.toDate?.() || data.created_at,
+				updated_at: data.updated_at?.toDate?.() || data.updated_at,
+				...(data.createTime && {
+					createTime: data.createTime?.toDate?.() || data.createTime,
+				}),
+				...(data.updateTime && {
+					updateTime: data.updateTime?.toDate?.() || data.updateTime,
+				}),
+			} as Connection)
 		})
 
 		return connections
@@ -108,7 +138,20 @@ export const getConnectionByConnectionId = createServerFn({ method: 'GET' })
 			throw new Error(`Connection with ID ${data.connectionId} not found`)
 		}
 
-		return { ...doc.data(), id: doc.id } as Connection
+		const docData = doc.data()
+		return {
+			...docData,
+			id: doc.id,
+			// Convert Firestore Timestamps to JS Dates
+			created_at: docData?.created_at?.toDate?.() || docData?.created_at,
+			updated_at: docData?.updated_at?.toDate?.() || docData?.updated_at,
+			...(docData?.createTime && {
+				createTime: docData.createTime?.toDate?.() || docData.createTime,
+			}),
+			...(docData?.updateTime && {
+				updateTime: docData.updateTime?.toDate?.() || docData.updateTime,
+			}),
+		} as Connection
 	})
 
 export const deleteConnection = createServerFn({ method: 'POST' })

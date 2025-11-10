@@ -83,7 +83,15 @@ export const createGithubConnectionServerFn = createServerFn()
 				data: { selected_connection_location: data.location },
 			})
 
-			return { installationState: response.installationState }
+			return {
+				installationState: response.installationState
+					? {
+							stage: String(response.installationState.stage) || 'UNKNOWN',
+							message: response.installationState.message || undefined,
+							actionUri: response.installationState.actionUri || undefined,
+						}
+					: undefined,
+			}
 		} catch (error) {
 			// Check if error code is 6 (ALREADY_EXISTS)
 			const errorCode = (error as { code?: number })?.code
@@ -105,7 +113,8 @@ export const createGithubConnectionServerFn = createServerFn()
 							location: data.location,
 							connectionId,
 							status:
-								connection.installationState?.stage === 'COMPLETE'
+								String(connection.installationState?.stage) === 'COMPLETE' ||
+								String(connection.installationState?.stage) === '1'
 									? 'active'
 									: 'pending',
 							...(connection.createTime?.seconds && {
@@ -132,7 +141,17 @@ export const createGithubConnectionServerFn = createServerFn()
 						},
 					})
 
-					return { installationState: connection.installationState }
+					return {
+						installationState: connection.installationState
+							? {
+									stage:
+										String(connection.installationState.stage) || 'UNKNOWN',
+									message: connection.installationState.message || undefined,
+									actionUri:
+										connection.installationState.actionUri || undefined,
+								}
+							: undefined,
+					}
 				} catch (getError) {
 					throw new Error(
 						`Connection already exists but failed to fetch details: ${(getError as { message?: string })?.message}`,
@@ -172,19 +191,29 @@ export const verifyGithubConnectionServerFn = createServerFn()
 			let status: 'pending' | 'active' | 'error' | 'action_required' = 'pending'
 			let message = 'Connection status is unknown.'
 
+			// Convert stage to string for comparison
+			const stageString = connection.installationState?.stage
+				? String(connection.installationState.stage)
+				: ''
+
 			if (connection.reconciling) {
 				status = 'pending'
 				message = 'Connection is being finalized by Google Cloud.'
-			} else if (connection.installationState?.stage === 'COMPLETE') {
+			} else if (stageString === 'COMPLETE' || stageString === '1') {
+				// Stage can be 'COMPLETE' string or enum value 1
 				status = 'active'
 				message = 'Connection is active and ready to use.'
-			} else {
+			} else if (connection.disabled) {
+				status = 'error'
+				message = 'Connection is disabled.'
+			} else if (connection.installationState?.actionUri) {
 				status = 'action_required'
 				message =
 					'Connection is waiting for user to complete authorization on GitHub.'
-			}
-
-			// Update Firestore with the latest connection details
+			} else {
+				status = 'pending'
+				message = 'Connection status is being determined.'
+			} // Update Firestore with the latest connection details
 			const now = new Date()
 			await updateConnectionInDb({
 				data: {
@@ -201,36 +230,43 @@ export const verifyGithubConnectionServerFn = createServerFn()
 						updateTime: new Date(Number(connection.updateTime.seconds) * 1000),
 					}),
 					reconciling: connection.reconciling || false,
-					installationState: connection.installationState
-						? {
-								stage: String(connection.installationState.stage) || 'UNKNOWN',
-								message: connection.installationState.message || undefined,
-								actionUri: connection.installationState.actionUri || undefined,
-							}
-						: undefined,
+					...(connection.installationState && {
+						installationState: {
+							stage: String(connection.installationState.stage) || 'UNKNOWN',
+							...(connection.installationState.message && {
+								message: connection.installationState.message,
+							}),
+							...(connection.installationState.actionUri && {
+								actionUri: connection.installationState.actionUri,
+							}),
+						},
+					}),
 					disabled: connection.disabled || false,
-					githubConfig: connection.githubConfig
-						? {
-								authorizerCredential: connection.githubConfig
-									.authorizerCredential
-									? {
-											oauthTokenSecretVersion:
-												connection.githubConfig.authorizerCredential
-													.oauthTokenSecretVersion || undefined,
-											username:
-												connection.githubConfig.authorizerCredential.username ||
-												undefined,
-										}
-									: undefined,
+					...(connection.githubConfig && {
+						githubConfig: {
+							...(connection.githubConfig.authorizerCredential && {
+								authorizerCredential: {
+									...(connection.githubConfig.authorizerCredential
+										.oauthTokenSecretVersion && {
+										oauthTokenSecretVersion:
+											connection.githubConfig.authorizerCredential
+												.oauthTokenSecretVersion,
+									}),
+									...(connection.githubConfig.authorizerCredential.username && {
+										username:
+											connection.githubConfig.authorizerCredential.username,
+									}),
+								},
+							}),
+							...(connection.githubConfig.appInstallationId && {
 								appInstallationId:
-									connection.githubConfig.appInstallationId
-										?.toString()
-										.toString() || undefined,
-							}
-						: undefined,
-					username:
-						connection.githubConfig?.authorizerCredential?.username ||
-						undefined,
+									connection.githubConfig.appInstallationId.toString(),
+							}),
+						},
+					}),
+					...(connection.githubConfig?.authorizerCredential?.username && {
+						username: connection.githubConfig.authorizerCredential.username,
+					}),
 					updated_at: now,
 				},
 			})
@@ -238,9 +274,17 @@ export const verifyGithubConnectionServerFn = createServerFn()
 			return {
 				status: status,
 				message: message,
-				reconciling: connection.reconciling,
-				githubAppStage: connection.installationState?.stage,
-				installationState: connection.installationState,
+				reconciling: connection.reconciling || false,
+				githubAppStage: connection.installationState?.stage
+					? String(connection.installationState.stage)
+					: undefined,
+				installationState: connection.installationState
+					? {
+							stage: String(connection.installationState.stage) || 'UNKNOWN',
+							message: connection.installationState.message || undefined,
+							actionUri: connection.installationState.actionUri || undefined,
+						}
+					: undefined,
 			}
 		} catch (error) {
 			throw new Error(
@@ -280,7 +324,9 @@ export const deleteGithubConnectionServerFn = createServerFn()
 			}
 
 			// Delete from Firestore
-			await deleteConnectionFromDb({ data: { connectionId: data.connectionId } })
+			await deleteConnectionFromDb({
+				data: { connectionId: data.connectionId },
+			})
 
 			return { success: true, message: 'Connection deleted successfully' }
 		} catch (error) {
@@ -363,17 +409,19 @@ export const syncConnectionsServerFn = createServerFn()
 						// Determine status
 						let status: 'pending' | 'active' | 'error' | 'action_required' =
 							'pending'
+						const stageString = connection.installationState?.stage
+							? String(connection.installationState.stage)
+							: ''
+
 						if (connection.reconciling) {
 							status = 'pending'
-						} else if (connection.installationState?.stage === 'COMPLETE') {
+						} else if (stageString === 'COMPLETE' || stageString === '1') {
 							status = 'active'
 						} else if (connection.disabled) {
 							status = 'error'
 						} else {
 							status = 'action_required'
-						}
-
-						// Extract username
+						} // Extract username
 						const username =
 							connection.githubConfig?.authorizerCredential?.username ||
 							connection.gitlabConfig?.authorizerCredential?.username ||

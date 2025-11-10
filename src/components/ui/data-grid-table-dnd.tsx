@@ -1,4 +1,3 @@
-import { CSSProperties, Fragment, useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { useDataGrid } from '@/components/ui/data-grid';
 import {
@@ -31,6 +30,7 @@ import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dn
 import { CSS } from '@dnd-kit/utilities';
 import { Cell, flexRender, Header, HeaderGroup, Row } from '@tanstack/react-table';
 import { GripVertical } from 'lucide-react';
+import { CSSProperties, Fragment, useId } from 'react';
 
 function DataGridTableDndHeader<TData>({ header }: { header: Header<TData, unknown> }) {
   const { props } = useDataGrid();
@@ -54,9 +54,8 @@ function DataGridTableDndHeader<TData>({ header }: { header: Header<TData, unkno
     <DataGridTableHeadRowCell header={header} dndStyle={style} dndRef={setNodeRef}>
       <div className="flex items-center justify-start gap-0.5">
         <Button
-          mode="icon"
-          size="sm"
-          variant="dim"
+          size="icon"
+          variant="ghost"
           className="-ms-2 size-6"
           {...attributes}
           {...listeners}
@@ -112,7 +111,6 @@ function DataGridTableDnd<TData>({ handleDragEnd }: { handleDragEnd: (event: Dra
         <DataGridTableBase>
           <DataGridTableHead>
             {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>, index) => {
-              console.log('table.getState().columnOrder:', table.getState().columnOrder);
 
               return (
                 <DataGridTableHeadRow headerGroup={headerGroup} key={index}>

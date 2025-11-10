@@ -220,7 +220,6 @@ export function maybeHandleFormZodError<T extends object>(
 			// Not a JSON array, ignore
 		}
 
-		console.log({ issues })
 		for (const err of issues) {
 			// we are dealing with zod error
 			if (err?.path && err.message) {
