@@ -51,9 +51,6 @@ export const Route = createFileRoute('/')({
 			throw redirect({ to: '/onboarding' })
 		}
 	},
-	// async loader() {
-	// 	const lastLoginMethod = auth.api.
-	// },
 	component: App,
 })
 

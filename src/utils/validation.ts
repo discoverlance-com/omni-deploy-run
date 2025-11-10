@@ -23,7 +23,12 @@ export const onboardingFormSchema = z.object({
 		.string()
 		.min(3, 'Name is required')
 		.max(150, 'Name must not be more than 150 characters'),
+	artifact_registry: z.enum(['us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'], {
+		message: 'Please select an Artifact Registry location',
+	}),
 })
+
+export type OnboardingFormValues = z.Infer<typeof onboardingFormSchema>
 
 export const loginFormSchema = z.object({
 	email: z
@@ -54,7 +59,6 @@ export const applicationSchema = z.object({
 		.max(100, 'Application name must not be more than 100 characters'),
 	tags: z
 		.array(z.string().min(1, 'Tag is required'))
-		.min(1, 'You must add at least 1 tag')
 		.max(5, 'You cannot add more than 5 tags'),
 	last_deployment_status: z.enum(['successful', 'pending', 'failed']),
 	region: z.enum(
@@ -80,6 +84,13 @@ export const applicationSchema = z.object({
 	),
 	repository: z.string().min(1, 'Repository is required'),
 	connection_id: z.string().min(1, 'Connection ID is required'),
+	git_branch: z
+		.string()
+		.min(1, 'Git branch is required')
+		.regex(
+			/^[a-zA-Z0-9/_.-]+$/,
+			'Branch name can only contain letters, numbers, slashes, dots, underscores, and hyphens',
+		),
 	url: z.url().optional(),
 	last_deployed_at: z.date().optional(),
 	updated_at: z.date(),

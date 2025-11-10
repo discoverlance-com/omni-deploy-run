@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { AtSignIcon, KeyRoundIcon, UserIcon } from 'lucide-react'
 import { toast } from 'sonner'
-import type z from 'zod/v4'
+import type { z } from 'zod/v4'
 
 import { FloatingPaths } from '@/components/floating-paths'
 import { Form } from '@/components/form-components'
@@ -18,12 +18,17 @@ import {
 	InputGroupAddon,
 	InputGroupInput,
 } from '@/components/ui/input-group'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { SelectItem } from '@/components/ui/select'
 import { siteInfo } from '@/config/site'
 import { getOnboarding } from '@/database/onboarding'
 import { useAppForm } from '@/lib/form'
 import { handleUserOnboardingForm } from '@/lib/server-fns/onboarding'
 import { requireAnonymousUser } from '@/utils/auth'
-import { onboardingFormSchema } from '@/utils/validation'
+import {
+	type OnboardingFormValues,
+	onboardingFormSchema,
+} from '@/utils/validation'
 
 export const Route = createFileRoute('/onboarding/')({
 	head: () => ({
@@ -57,7 +62,8 @@ function App() {
 			email: '',
 			password: '',
 			name: '',
-		},
+			artifact_registry: 'us.gcr.io',
+		} as OnboardingFormValues,
 		onSubmit: async ({ value }) => {
 			await handleFormSubmission(value)
 		},
@@ -96,7 +102,7 @@ function App() {
 					</blockquote>
 				</div>
 			</div>
-			<div className="relative flex min-h-screen flex-col justify-center p-4">
+			<div className="relative flex min-h-screen flex-col justify-center p-4 ">
 				<div
 					aria-hidden
 					className="-z-10 absolute inset-0 isolate opacity-60 contain-strict"
@@ -105,12 +111,14 @@ function App() {
 					<div className="absolute top-0 right-0 h-320 w-60 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-foreground/.04)_0,--theme(--color-foreground/.01)_80%,transparent_100%)] [translate:5%_-50%]" />
 					<div className="-translate-y-87.5 absolute top-0 right-0 h-320 w-60 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-foreground/.04)_0,--theme(--color-foreground/.01)_80%,transparent_100%)]" />
 				</div>
-				<div className="mx-auto space-y-4 sm:w-sm">
+				<ScrollArea className="mx-auto space-y-4 sm:w-sm h-[80svh] pr-4">
+					<ScrollBar orientation="horizontal" />
 					<Logo className="h-6 lg:hidden" />
 					<div className="flex flex-col space-y-1">
 						<h1 className="font-bold text-2xl tracking-wide">Onboarding</h1>
 						<p className="text-base text-muted-foreground">
-							setup initial access and account
+							setup initial access and account. scroll down to fill the form
+							below.
 						</p>
 					</div>
 
@@ -231,6 +239,43 @@ function App() {
 									/>
 								</FieldGroup>
 							</FieldSet>
+
+							<FieldSet>
+								<FieldLegend>Cloud Resources</FieldLegend>
+								<FieldDescription>
+									Initial resources to be deployed on the cloud.
+								</FieldDescription>
+
+								<FieldGroup className="gap-4">
+									<form.AppField
+										name="artifact_registry"
+										children={(field) => {
+											return (
+												<field.SelectField
+													labelProps={{
+														children: 'Artifact Registry *',
+													}}
+													selectInputProps={{
+														autoComplete: 'off',
+														required: true,
+													}}
+													helperText="The container registry location where your container images will be stored"
+												>
+													<SelectItem value="us.gcr.io">
+														US (us.gcr.io)
+													</SelectItem>
+													<SelectItem value="eu.gcr.io">
+														Europe (eu.gcr.io)
+													</SelectItem>
+													<SelectItem value="asia.gcr.io">
+														Asia (asia.gcr.io)
+													</SelectItem>
+												</field.SelectField>
+											)
+										}}
+									/>
+								</FieldGroup>
+							</FieldSet>
 						</FieldGroup>
 
 						<form.AppForm>
@@ -239,7 +284,7 @@ function App() {
 							</form.SubscribeButton>
 						</form.AppForm>
 					</Form>
-				</div>
+				</ScrollArea>
 			</div>
 		</main>
 	)
