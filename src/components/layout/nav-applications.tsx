@@ -24,10 +24,10 @@ import {
 	useSidebar,
 } from '@/components/ui/sidebar'
 
-export function NavProjects({
-	projects,
+export function NavApplications({
+	applications,
 }: {
-	projects: {
+	applications: {
 		name: string
 		url: string
 		icon?: LucideIcon
@@ -38,16 +38,16 @@ export function NavProjects({
 
 	return (
 		<SidebarGroup className="group-data-[collapsible=icon]:hidden">
-			<SidebarGroupLabel>List of Projects</SidebarGroupLabel>
+			<SidebarGroupLabel>List of Applications</SidebarGroupLabel>
 			<SidebarMenu>
-				{projects.length === 0 ? (
+				{applications.length === 0 ? (
 					<SidebarMenuItem>
 						<SidebarMenuButton className="text-muted-foreground">
-							<span>No projects added yet</span>
+							<span>No applications added yet</span>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				) : (
-					projects.map((item) => (
+					applications.map((item) => (
 						<SidebarMenuItem key={item.name}>
 							<SidebarMenuButton
 								asChild

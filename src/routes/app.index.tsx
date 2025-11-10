@@ -54,12 +54,12 @@ function RouteComponent() {
 						</div>
 						<div>
 							<h3 className="font-semibold text-lg text-primary">
-								2. Organize Applications
+								2. Deploy Applications
 							</h3>
 							<p className="text-sm text-gray-600 mt-1">
-								Applications are organized within projects. Select a project
-								from the sidebar list to view its details and deploy new
-								applications.
+								Applications can be deployed from your github repository after
+								setting up a git connection. Applications require a Dockerfile
+								in the root of the repository.
 							</p>
 						</div>
 					</div>

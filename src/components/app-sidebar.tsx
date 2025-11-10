@@ -1,15 +1,8 @@
 import { Link } from '@tanstack/react-router'
-import {
-	AppWindowIcon,
-	Home,
-	LinkIcon,
-	RocketIcon,
-	Settings2,
-} from 'lucide-react'
+import { AppWindowIcon, Home, LinkIcon, RocketIcon } from 'lucide-react'
 import type * as React from 'react'
 
 import { NavMain } from '@/components/layout/nav-main'
-import { NavProjects } from '@/components/layout/nav-projects'
 import {
 	Sidebar,
 	SidebarContent,
@@ -37,11 +30,11 @@ const data = {
 			url: '/app/connections',
 			icon: LinkIcon,
 		},
-		{
-			title: 'Settings',
-			url: '/app/settings',
-			icon: Settings2,
-		},
+		// {
+		// 	title: 'Settings',
+		// 	url: '/app/settings',
+		// 	icon: Settings2,
+		// },
 	],
 	projects: [
 		{
@@ -83,7 +76,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={data.navMain} />
-				<NavProjects projects={data.projects} />
+				{/* <NavApplications /> */}
 			</SidebarContent>
 		</Sidebar>
 	)

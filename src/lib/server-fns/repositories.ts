@@ -47,10 +47,10 @@ export const upsertRepositoryServerFn = createServerFn()
 					: undefined,
 			}
 		} catch (error) {
-			// Check if error code is 2 (NOT_FOUND)
+			// Check if error code is 5 (NOT_FOUND)
 			const errorCode = (error as { code?: number })?.code
 
-			if (errorCode === 2) {
+			if (errorCode === 5) {
 				const request: GoogleProtos.devtools.cloudbuild.v2.ICreateRepositoryRequest =
 					{
 						parent: data.connectionId,

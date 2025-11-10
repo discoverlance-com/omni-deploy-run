@@ -13,6 +13,7 @@ const artifactRegistrySchema = z.object({
 	created_at: z.date().optional(),
 })
 
+type ArtifactRegistry = z.infer<typeof artifactRegistrySchema>
 const ARTIFACT_REGISTRYS_COLLECTION = 'repositories'
 
 export const createArtifactRegistry = createServerFn({ method: 'POST' })
@@ -43,6 +44,23 @@ export const createArtifactRegistry = createServerFn({ method: 'POST' })
 			id: docId,
 		}
 	})
+
+export const getAllArtifactRegistries = createServerFn({
+	method: 'GET',
+}).handler(async () => {
+	const db = getFirestoreClient()
+	const snapshot = await db.collection(ARTIFACT_REGISTRYS_COLLECTION).get()
+
+	return snapshot.docs.map((doc) => {
+		const data = doc.data()
+		return {
+			...(data as ArtifactRegistry),
+			id: doc.id,
+			created_at: data.created_at?.toDate?.() || data.created_at,
+			updated_at: data.updated_at?.toDate?.() || data.updated_at,
+		}
+	})
+})
 
 export const updateArtifactRegistry = createServerFn({ method: 'POST' })
 	.inputValidator(
