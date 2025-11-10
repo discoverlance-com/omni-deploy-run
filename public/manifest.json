@@ -1,6 +1,7 @@
 {
-  "short_name": "OmniDeploy Run",
-  "name": "Deploy your serverless applications on cloud run",
+  "name": "OmniDeploy Run",
+  "short_name": "OmniD. Run",
+  "descrption": "Deploy your serverless applications on cloud run",
   "icons": [
     {
       "src": "favicon.ico",

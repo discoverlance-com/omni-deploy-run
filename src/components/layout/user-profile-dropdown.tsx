@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { LogOutIcon, Settings2, UserIcon } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -15,6 +15,8 @@ import { Button } from '../ui/button'
 
 export function UserProfileDropdown() {
 	const { data } = useSession()
+	const navigate = useNavigate()
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -49,8 +51,9 @@ export function UserProfileDropdown() {
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
-					onSelect={() => {
-						signOut()
+					onSelect={async () => {
+						await signOut()
+						await navigate({ to: '/' })
 					}}
 					className="cursor-pointer"
 				>

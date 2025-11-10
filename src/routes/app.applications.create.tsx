@@ -69,6 +69,7 @@ const createApplicationSchema = applicationSchema.pick({
 	name: true,
 	connection_id: true,
 	repository: true,
+	git_branch: true,
 	tags: true,
 	region: true,
 	allow_public_access: true,
@@ -89,6 +90,7 @@ function RouteComponent() {
 			tags: [] as string[],
 			connection_id: '',
 			repository: '',
+			git_branch: 'main',
 			region: 'us-central1',
 			allow_public_access: true,
 			memory: '512Mi',
@@ -244,6 +246,24 @@ function RouteComponent() {
 														})
 													) : null}
 												</field.SelectField>
+											)
+										}}
+									/>
+
+									<form.AppField
+										name="git_branch"
+										children={(field) => {
+											return (
+												<field.TextField
+													labelProps={{ children: 'Git Branch *' }}
+													inputProps={{
+														autoComplete: 'off',
+														type: 'text',
+														required: true,
+														placeholder: 'main',
+													}}
+													helperText="The branch to deploy from (e.g., main, develop)"
+												/>
 											)
 										}}
 									/>
