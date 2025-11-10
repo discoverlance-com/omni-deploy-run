@@ -1,4 +1,5 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-form'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { GlobeIcon, KeyIcon, PlusCircleIcon, XIcon } from 'lucide-react'
@@ -49,12 +50,18 @@ import {
 	applicationSchema,
 	maybeHandleFormZodError,
 } from '@/utils/validation'
-import { connectionQueryOptions } from './app/connections/-data/query-options'
+import {
+	connectionQueryOptions,
+	linkableRepositiresQueryOptions,
+} from './app/connections/-data/query-options'
 
 export const Route = createFileRoute('/app/applications/create')({
 	head: () => ({
 		meta: [{ title: `Create Application - ${siteInfo.title}` }],
 	}),
+	async loader({ context }) {
+		await context.queryClient.ensureQueryData(connectionQueryOptions())
+	},
 	component: RouteComponent,
 })
 
@@ -74,7 +81,7 @@ function RouteComponent() {
 	const addApplication = useServerFn(createApplication)
 	const navigate = Route.useNavigate()
 
-	const { data } = useSuspenseQuery(connectionQueryOptions())
+	const { data: connections } = useSuspenseQuery(connectionQueryOptions())
 
 	const form = useAppForm({
 		defaultValues: {
@@ -110,6 +117,21 @@ function RouteComponent() {
 			}
 		},
 	})
+
+	const connectionId = useStore(
+		form.store,
+		(state) => state.values.connection_id,
+	)
+
+	const {
+		data: linkableRepositories,
+		isLoading: isLoadingLinkableRepositories,
+	} = useQuery(
+		linkableRepositiresQueryOptions(
+			{ connectionId: connectionId },
+			{ enabled: !!connectionId },
+		),
+	)
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4">
@@ -149,6 +171,79 @@ function RouteComponent() {
 													}}
 													helperText="The name of the application"
 												/>
+											)
+										}}
+									/>
+
+									<form.AppField
+										name="connection_id"
+										children={(field) => {
+											return (
+												<field.SelectField
+													labelProps={{
+														children: 'Connection *',
+													}}
+													selectInputProps={{
+														autoComplete: 'off',
+														required: true,
+													}}
+													helperText="Select a connection to link your repository"
+												>
+													{connections.connections.map((connection) => {
+														return (
+															<SelectItem
+																key={connection.connectionId}
+																value={connection.name}
+															>
+																{connection.displayName}
+															</SelectItem>
+														)
+													})}
+												</field.SelectField>
+											)
+										}}
+									/>
+
+									<form.AppField
+										name="repository"
+										children={(field) => {
+											return (
+												<field.SelectField
+													labelProps={{
+														children: 'Repository *',
+													}}
+													selectInputProps={{
+														autoComplete: 'off',
+														required: true,
+														disabled:
+															!connectionId || isLoadingLinkableRepositories,
+													}}
+													helperText={
+														!connectionId
+															? 'Select a connection first'
+															: isLoadingLinkableRepositories
+																? 'Loading repositories...'
+																: 'Select a repository to deploy'
+													}
+												>
+													{isLoadingLinkableRepositories ? (
+														<SelectItem value="loading" disabled>
+															Please wait, loading repositories...
+														</SelectItem>
+													) : linkableRepositories &&
+														Array.isArray(linkableRepositories) ? (
+														linkableRepositories.map((repo) => {
+															return (
+																<SelectItem
+																	key={repo.remoteUri}
+																	value={repo.remoteUri || ''}
+																>
+																	{repo.remoteUri}
+																</SelectItem>
+															)
+														})
+													) : null}
+												</field.SelectField>
 											)
 										}}
 									/>

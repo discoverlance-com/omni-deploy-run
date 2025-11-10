@@ -95,7 +95,7 @@ export const getAllLinkableRepositoriesServerFn = createServerFn({
 		const repositories: Pick<
 			GoogleProtos.devtools.cloudbuild.v2.IRepository,
 			'name' | 'remoteUri'
-		>[] = [{}]
+		>[] = []
 
 		const iterable =
 			repositoryManagerClient.fetchLinkableRepositoriesAsync(request)

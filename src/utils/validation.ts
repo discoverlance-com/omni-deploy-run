@@ -90,7 +90,7 @@ export type Application = z.Infer<typeof applicationSchema>
 
 export const connectionSchema = z.object({
 	id: z.string().optional(),
-	name: z.string().optional(), // Full resource name from Cloud Build API
+	name: z.string(),
 	displayName: z
 		.string('Connection name must be text')
 		.min(1, 'Connection name is required')
