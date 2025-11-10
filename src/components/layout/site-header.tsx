@@ -2,7 +2,6 @@ import { Link } from '@tanstack/react-router'
 import { SidebarIcon } from 'lucide-react'
 
 import { UserProfileDropdown } from '@/components/layout/user-profile-dropdown'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
 	Breadcrumb,
 	BreadcrumbItem,
