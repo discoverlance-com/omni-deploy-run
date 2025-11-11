@@ -1,9 +1,12 @@
+import util from 'node:util'
+
 import { useStore } from '@tanstack/react-form'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { GlobeIcon, KeyIcon, PlusCircleIcon, XIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import type z4 from 'zod/v4'
 
 import { Form } from '@/components/form-components'
 import { Button } from '@/components/ui/button'
@@ -43,6 +46,7 @@ import { Switch } from '@/components/ui/switch'
 import { siteInfo } from '@/config/site'
 import { createApplication } from '@/database/applications'
 import { useAppForm } from '@/lib/form'
+import { runCloudBuildTriggerServerFn } from '@/lib/server-fns/cloud-build'
 import { SUPPORTED_CLOUD_BUILD_LOCATIONS } from '@/utils/cloud-build-locations'
 import { SUPPORTED_CLOUD_RUN_MEMORY_OPTIONS } from '@/utils/cloud-run-locations'
 import {
@@ -61,6 +65,32 @@ export const Route = createFileRoute('/app/applications/create')({
 	}),
 	async loader({ context }) {
 		await context.queryClient.ensureQueryData(connectionQueryOptions())
+
+		try {
+			await runCloudBuildTriggerServerFn({
+				data: {
+					triggerId: '96c8b486-8911-4ba5-812d-9ff8f47983ef',
+					location: 'us-central1',
+					triggerName: 'react-router-starter-github-trigger',
+				},
+			})
+			// await createGithubCloudBuildTriggerServerFn({
+			// 	data: {
+			// 		applicationName: 'react-router-starter',
+			// 		branch: 'main',
+			// 		location: 'us-central1',
+			// 		connectionId:
+			// 			'projects/omni-deploy-run/locations/us-central1/connections/omni-deploy-run-github-connection',
+			// 		repository: {
+			// 			remoteUri:
+			// 				'https://github.com/discoverlance-com/react-router-starter.git',
+			// 		},
+			// 	},
+			// })
+		} catch (error) {
+			console.log(util.inspect(error, false, null, true /* enable colors */))
+			throw error
+		}
 	},
 	component: RouteComponent,
 })
@@ -70,6 +100,7 @@ const createApplicationSchema = applicationSchema.pick({
 	connection_id: true,
 	repository: true,
 	git_branch: true,
+	port: true,
 	tags: true,
 	region: true,
 	allow_public_access: true,
@@ -91,12 +122,13 @@ function RouteComponent() {
 			connection_id: '',
 			repository: '',
 			git_branch: 'main',
+			port: 8080,
 			region: 'us-central1',
 			allow_public_access: true,
 			memory: '512Mi',
 			number_of_cpus: '1',
 			environment_variables: [] as Application['environment_variables'],
-		},
+		} as z4.output<typeof createApplicationSchema>,
 		validators: {
 			onSubmit: createApplicationSchema,
 		},
@@ -263,6 +295,26 @@ function RouteComponent() {
 														placeholder: 'main',
 													}}
 													helperText="The branch to deploy from (e.g., main, develop)"
+												/>
+											)
+										}}
+									/>
+
+									<form.AppField
+										name="port"
+										children={(field) => {
+											return (
+												<field.TextField
+													labelProps={{ children: 'Port *' }}
+													inputProps={{
+														autoComplete: 'off',
+														type: 'number',
+														required: true,
+														min: 1,
+														max: 65535,
+														placeholder: '4000',
+													}}
+													helperText="The port number the application will run on (e.g., 4000)"
 												/>
 											)
 										}}

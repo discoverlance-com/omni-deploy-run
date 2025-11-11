@@ -83,6 +83,15 @@ export const createApplication = createServerFn({
 			connection_id: true,
 			repository: true,
 			tags: true,
+			allow_public_access: true,
+			git_branch: true,
+			number_of_cpus: true,
+			memory: true,
+			trigger_details: true,
+			region: true,
+			port: true,
+			service_account_id: true,
+			environment_variables: true,
 		}),
 	)
 	.handler(async ({ data }) => {

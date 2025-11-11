@@ -11,6 +11,9 @@ export const Route = createFileRoute('/app')({
 	async beforeLoad() {
 		await requireAuthentedUser()
 	},
+	// async loader({context}) {
+	// 	await context.queryClient.ensureQueryData(applicationsQueryOptions())
+	// },
 	component: RouteComponent,
 	notFoundComponent: () => {
 		return <DashboardNotFound />

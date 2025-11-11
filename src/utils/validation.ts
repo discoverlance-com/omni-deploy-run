@@ -91,6 +91,29 @@ export const applicationSchema = z.object({
 			/^[a-zA-Z0-9/_.-]+$/,
 			'Branch name can only contain letters, numbers, slashes, dots, underscores, and hyphens',
 		),
+	port: z
+		.number()
+		.min(1, 'Port must be at least 1')
+		.max(65535, 'Port must not exceed 65535')
+		.refine(
+			(port) => port >= 1024 || port === 80 || port === 443,
+			'Port should be above 1024 or 80/443 for standard HTTP ports',
+		),
+	trigger_details: z
+		.object({
+			service_account: z.string(),
+			name: z.string(),
+			repository_event_config: z.object({
+				name: z.string(),
+				pull_request: z.object({
+					branch: z.string(),
+				}),
+				push: z.object({
+					branch: z.string(),
+				}),
+			}),
+		})
+		.optional(),
 	url: z.url().optional(),
 	last_deployed_at: z.date().optional(),
 	updated_at: z.date(),
