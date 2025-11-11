@@ -1,17 +1,34 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { FolderIcon, LinkIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { siteInfo } from '@/config/site'
+import { applicationsQueryOptions } from './app/applications/-data/query-options'
+import { connectionQueryOptions } from './app/connections/-data/query-options'
 
 export const Route = createFileRoute('/app/')({
 	head: () => ({
 		meta: [{ title: `Dashboard - ${siteInfo.title}` }],
 	}),
+	async loader({ context }) {
+		// Preload both connections and applications data
+		await Promise.all([
+			context.queryClient.ensureQueryData(connectionQueryOptions()),
+			context.queryClient.ensureQueryData(applicationsQueryOptions()),
+		])
+	},
 	component: RouteComponent,
 })
 
 function RouteComponent() {
+	// Fetch the actual data
+	const { data } = useSuspenseQuery(connectionQueryOptions())
+	const { data: applications } = useSuspenseQuery(applicationsQueryOptions())
+
+	const totalConnections = data.connections?.length ?? 0
+	const totalApplications = applications?.length ?? 0
+
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4">
 			<h1 className="text-4xl font-bold">Dashboard</h1>
@@ -67,37 +84,41 @@ function RouteComponent() {
 			</div>
 			<h2 className="text-muted-foreground uppercase font-medium">Metrics</h2>
 			<div className="grid auto-rows-min gap-4 md:grid-cols-3">
-				<div className="bg-secondary p-6 rounded-lg border">
-					<h3 className="text-sm text-gray-700 font-medium  uppercase tracking-wider">
+				<div className="bg-primary p-6 rounded-lg border">
+					<h3 className="text-sm text-white font-medium  uppercase tracking-wider">
 						Total Git Connections
 					</h3>
-					<p className={'mt-2 text-4xl text-blue-800 font-bold'}>2</p>
+					<p className={'mt-2 text-4xl text-blue-800 font-bold'}>
+						{totalConnections}
+					</p>
 				</div>
-				<div className="bg-secondary p-6 rounded-lg border">
-					<h3 className="text-sm text-gray-700 font-medium  uppercase tracking-wider">
+				<div className="bg-primary p-6 rounded-lg border">
+					<h3 className="text-sm text-white font-medium  uppercase tracking-wider">
 						Total Applications
 					</h3>
-					<p className={'mt-2 text-4xl text-blue-800 font-bold'}>9</p>
+					<p className={'mt-2 text-4xl text-blue-800 font-bold'}>
+						{totalApplications}
+					</p>
 				</div>
-				<div className="bg-secondary p-6 rounded-lg border">
-					<h3 className="text-sm text-gray-700 font-medium  uppercase tracking-wider">
+				{/* <div className="bg-primary p-6 rounded-lg border">
+					<h3 className="text-sm text-white font-medium  uppercase tracking-wider">
 						Successful Builds
 					</h3>
 					<p className={'mt-2 text-4xl text-green-800 font-bold'}>9</p>
-				</div>
-				<div className="bg-secondary p-6 rounded-lg border">
-					<h3 className="text-sm text-gray-700 font-medium  uppercase tracking-wider">
+				</div> */}
+				{/* <div className="bg-primary p-6 rounded-lg border">
+					<h3 className="text-sm text-white font-medium  uppercase tracking-wider">
 						Failed Builds
 					</h3>
 					<p className={'mt-2 text-4xl text-red-800 font-bold'}>9</p>
-				</div>
+				</div> */}
 			</div>
-			<div className="bg-secondary p-6 rounded-lg border">
+			{/* <div className="bg-secondary p-6 rounded-lg border">
 				<h2 className="text-xl font-semibold text-gray-700 mb-4">
 					Recent Build Status
 				</h2>
 				<BuildsChart />
-			</div>
+			</div> */}
 		</div>
 	)
 }

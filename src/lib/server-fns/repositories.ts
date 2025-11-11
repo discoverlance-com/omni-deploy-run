@@ -109,3 +109,100 @@ export const getAllLinkableRepositoriesServerFn = createServerFn({
 
 		return repositories
 	})
+
+export const listRepositoriesServerFn = createServerFn()
+	.inputValidator(
+		z.object({
+			connectionId: z.string().min(1, 'Connection ID is required'),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const request: GoogleProtos.devtools.cloudbuild.v2.IListRepositoriesRequest =
+			{
+				parent: data.connectionId,
+				pageSize: 100,
+			}
+
+		const repositories: Pick<
+			GoogleProtos.devtools.cloudbuild.v2.IRepository,
+			'name' | 'remoteUri'
+		>[] = []
+
+		try {
+			const iterable = repositoryManagerClient.listRepositoriesAsync(request)
+
+			for await (const response of iterable) {
+				repositories.push({
+					name: response.name,
+					remoteUri: response.remoteUri,
+				})
+			}
+
+			return repositories
+		} catch (error) {
+			console.error('Error listing repositories:', error)
+			// Return empty array if no repositories found or other error
+			return []
+		}
+	})
+
+export const deleteRepositoryServerFn = createServerFn()
+	.inputValidator(
+		z.object({
+			repositoryName: z.string().min(1, 'Repository name is required'),
+		}),
+	)
+	.handler(async ({ data }) => {
+		try {
+			const [operation] = await repositoryManagerClient.deleteRepository({
+				name: data.repositoryName,
+			})
+
+			await operation.promise()
+
+			return { success: true }
+		} catch (error) {
+			console.error('Error deleting repository:', error)
+			throw new Error(
+				`Failed to delete repository: ${(error as { message?: string })?.message}`,
+			)
+		}
+	})
+
+export const deleteAllRepositoriesForConnectionServerFn = createServerFn()
+	.inputValidator(
+		z.object({
+			connectionId: z.string().min(1, 'Connection ID is required'),
+		}),
+	)
+	.handler(async ({ data }) => {
+		try {
+			// First, list all repositories for this connection
+			const repositories = await listRepositoriesServerFn({
+				data: { connectionId: data.connectionId },
+			})
+
+			// Delete all repositories
+			const deletePromises = repositories.map((repo) => {
+				if (repo.name) {
+					return deleteRepositoryServerFn({
+						data: { repositoryName: repo.name },
+					})
+				}
+				return Promise.resolve({ success: true })
+			})
+
+			await Promise.all(deletePromises)
+
+			return {
+				success: true,
+				message: `Deleted ${repositories.length} repositories`,
+				deletedCount: repositories.length,
+			}
+		} catch (error) {
+			console.error('Error deleting all repositories for connection:', error)
+			throw new Error(
+				`Failed to delete repositories: ${(error as { message?: string })?.message}`,
+			)
+		}
+	})

@@ -314,6 +314,14 @@ export const deleteGithubConnectionServerFn = createServerFn()
 				data: { connectionId: data.connectionId },
 			})
 
+			// First, delete all repositories associated with this connection
+			const { deleteAllRepositoriesForConnectionServerFn } = await import(
+				'./repositories'
+			)
+			await deleteAllRepositoriesForConnectionServerFn({
+				data: { connectionId: connection.name },
+			})
+
 			// Delete from Cloud Build API using the stored name
 			if (connection.name) {
 				const [operation] = await repositoryManagerClient.deleteConnection({

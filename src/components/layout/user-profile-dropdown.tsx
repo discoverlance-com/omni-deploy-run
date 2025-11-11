@@ -1,5 +1,5 @@
-import { Link, useNavigate } from '@tanstack/react-router'
-import { LogOutIcon, Settings2, UserIcon } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { LogOutIcon } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -37,7 +37,7 @@ export function UserProfileDropdown() {
 			<DropdownMenuContent>
 				<DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem asChild className="cursor-pointer">
+				{/* <DropdownMenuItem asChild className="cursor-pointer">
 					<Link to="/app/profile">
 						<UserIcon />
 						<span>Profile</span>
@@ -49,7 +49,7 @@ export function UserProfileDropdown() {
 						<span>Settings</span>
 					</Link>
 				</DropdownMenuItem>
-				<DropdownMenuSeparator />
+				<DropdownMenuSeparator /> */}
 				<DropdownMenuItem
 					onSelect={async () => {
 						await signOut()
