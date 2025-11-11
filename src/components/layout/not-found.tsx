@@ -51,7 +51,7 @@ export const DefaultNotFound = () => {
 	)
 }
 
-export const DashboardNotFound = () => {
+export const DashboardNotFound = ({ message }: { message?: string }) => {
 	const location = useLocation()
 
 	return (
@@ -63,8 +63,8 @@ export const DashboardNotFound = () => {
 					</EmptyMedia>
 					<EmptyTitle className="font-bold text-8xl">404</EmptyTitle>
 					<EmptyDescription className="text-nowrap">
-						The page you're looking for might have been <br />
-						moved or doesn't exist.
+						{message ??
+							"The page you're looking for might have been moved or doesn't exist."}
 					</EmptyDescription>
 				</EmptyHeader>
 				<EmptyContent>

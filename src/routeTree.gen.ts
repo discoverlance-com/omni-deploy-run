@@ -14,14 +14,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as OnboardingIndexRouteImport } from './routes/onboarding.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSettingsIndexRouteImport } from './routes/app.settings.index'
-import { Route as AppProjectsIndexRouteImport } from './routes/app.projects.index'
 import { Route as AppProfileIndexRouteImport } from './routes/app.profile.index'
 import { Route as AppConnectionsIndexRouteImport } from './routes/app.connections.index'
 import { Route as AppApplicationsIndexRouteImport } from './routes/app.applications.index'
 import { Route as AppConnectionsCreateRouteImport } from './routes/app.connections.create'
 import { Route as AppApplicationsCreateRouteImport } from './routes/app.applications.create'
+import { Route as AppApplicationsApplicationIdRouteImport } from './routes/app.applications.$applicationId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
-import { Route as AppProjectsProjectIdIndexRouteImport } from './routes/app.projects.$projectId.index'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -46,11 +45,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
-  id: '/projects/',
-  path: '/projects/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
@@ -78,17 +72,17 @@ const AppApplicationsCreateRoute = AppApplicationsCreateRouteImport.update({
   path: '/applications/create',
   getParentRoute: () => AppRoute,
 } as any)
+const AppApplicationsApplicationIdRoute =
+  AppApplicationsApplicationIdRouteImport.update({
+    id: '/applications/$applicationId',
+    path: '/applications/$applicationId',
+    getParentRoute: () => AppRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppProjectsProjectIdIndexRoute =
-  AppProjectsProjectIdIndexRouteImport.update({
-    id: '/projects/$projectId/',
-    path: '/projects/$projectId/',
-    getParentRoute: () => AppRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,28 +90,26 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRoute
   '/app/applications/create': typeof AppApplicationsCreateRoute
   '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications': typeof AppApplicationsIndexRoute
   '/app/connections': typeof AppConnectionsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
-  '/app/projects': typeof AppProjectsIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
-  '/app/projects/$projectId': typeof AppProjectsProjectIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRoute
   '/app/applications/create': typeof AppApplicationsCreateRoute
   '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications': typeof AppApplicationsIndexRoute
   '/app/connections': typeof AppConnectionsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
-  '/app/projects': typeof AppProjectsIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
-  '/app/projects/$projectId': typeof AppProjectsProjectIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -126,14 +118,13 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRoute
   '/app/applications/create': typeof AppApplicationsCreateRoute
   '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications/': typeof AppApplicationsIndexRoute
   '/app/connections/': typeof AppConnectionsIndexRoute
   '/app/profile/': typeof AppProfileIndexRoute
-  '/app/projects/': typeof AppProjectsIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
-  '/app/projects/$projectId/': typeof AppProjectsProjectIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -143,28 +134,26 @@ export interface FileRouteTypes {
     | '/app/'
     | '/onboarding'
     | '/api/auth/$'
+    | '/app/applications/$applicationId'
     | '/app/applications/create'
     | '/app/connections/create'
     | '/app/applications'
     | '/app/connections'
     | '/app/profile'
-    | '/app/projects'
     | '/app/settings'
-    | '/app/projects/$projectId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/app'
     | '/onboarding'
     | '/api/auth/$'
+    | '/app/applications/$applicationId'
     | '/app/applications/create'
     | '/app/connections/create'
     | '/app/applications'
     | '/app/connections'
     | '/app/profile'
-    | '/app/projects'
     | '/app/settings'
-    | '/app/projects/$projectId'
   id:
     | '__root__'
     | '/'
@@ -172,14 +161,13 @@ export interface FileRouteTypes {
     | '/app/'
     | '/onboarding/'
     | '/api/auth/$'
+    | '/app/applications/$applicationId'
     | '/app/applications/create'
     | '/app/connections/create'
     | '/app/applications/'
     | '/app/connections/'
     | '/app/profile/'
-    | '/app/projects/'
     | '/app/settings/'
-    | '/app/projects/$projectId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -226,13 +214,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/projects/': {
-      id: '/app/projects/'
-      path: '/projects'
-      fullPath: '/app/projects'
-      preLoaderRoute: typeof AppProjectsIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/profile/': {
       id: '/app/profile/'
       path: '/profile'
@@ -268,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppApplicationsCreateRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/applications/$applicationId': {
+      id: '/app/applications/$applicationId'
+      path: '/applications/$applicationId'
+      fullPath: '/app/applications/$applicationId'
+      preLoaderRoute: typeof AppApplicationsApplicationIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -275,38 +263,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/projects/$projectId/': {
-      id: '/app/projects/$projectId/'
-      path: '/projects/$projectId'
-      fullPath: '/app/projects/$projectId'
-      preLoaderRoute: typeof AppProjectsProjectIdIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
   }
 }
 
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
+  AppApplicationsApplicationIdRoute: typeof AppApplicationsApplicationIdRoute
   AppApplicationsCreateRoute: typeof AppApplicationsCreateRoute
   AppConnectionsCreateRoute: typeof AppConnectionsCreateRoute
   AppApplicationsIndexRoute: typeof AppApplicationsIndexRoute
   AppConnectionsIndexRoute: typeof AppConnectionsIndexRoute
   AppProfileIndexRoute: typeof AppProfileIndexRoute
-  AppProjectsIndexRoute: typeof AppProjectsIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
-  AppProjectsProjectIdIndexRoute: typeof AppProjectsProjectIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
+  AppApplicationsApplicationIdRoute: AppApplicationsApplicationIdRoute,
   AppApplicationsCreateRoute: AppApplicationsCreateRoute,
   AppConnectionsCreateRoute: AppConnectionsCreateRoute,
   AppApplicationsIndexRoute: AppApplicationsIndexRoute,
   AppConnectionsIndexRoute: AppConnectionsIndexRoute,
   AppProfileIndexRoute: AppProfileIndexRoute,
-  AppProjectsIndexRoute: AppProjectsIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
-  AppProjectsProjectIdIndexRoute: AppProjectsProjectIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

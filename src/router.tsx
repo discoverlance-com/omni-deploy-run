@@ -15,6 +15,7 @@ export const getRouter = () => {
 		defaultPreload: 'intent',
 		defaultViewTransition: true,
 		scrollRestoration: true,
+		notFoundMode: 'fuzzy',
 		scrollRestorationBehavior: 'smooth',
 		Wrap: (props: { children: React.ReactNode }) => {
 			return (
