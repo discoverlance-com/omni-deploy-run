@@ -18,15 +18,21 @@ export interface LogStreamState {
 export function useLogStream(
 	applicationId: string,
 	buildId: string,
-): LogStreamState {
+): LogStreamState & { refresh: () => void } {
 	const [logs, setLogs] = useState<LogEntry[]>([])
 	const [connectionState, setConnectionState] = useState<
 		'connecting' | 'connected' | 'disconnected' | 'error'
 	>('connecting')
 	const [error, setError] = useState<string | null>(null)
+	const [refreshTrigger, setRefreshTrigger] = useState(0)
 	const eventSourceRef = useRef<EventSource | null>(null)
 	const isEndedRef = useRef<boolean>(false)
 
+	const refresh = () => {
+		setRefreshTrigger((prev) => prev + 1)
+	}
+
+	//biome-ignore lint/correctness/useExhaustiveDependencies: not needed
 	useEffect(() => {
 		if (!buildId || !applicationId) {
 			setConnectionState('error')
@@ -94,11 +100,12 @@ export function useLogStream(
 				eventSourceRef.current = null
 			}
 		}
-	}, [applicationId, buildId])
+	}, [applicationId, buildId, refreshTrigger])
 
 	return {
 		logs,
 		connectionState,
 		error,
+		refresh,
 	}
 }

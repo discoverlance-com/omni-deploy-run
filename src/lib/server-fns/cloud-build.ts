@@ -134,9 +134,7 @@ export const createGithubCloudBuildTriggerServerFn = createServerFn({
 									'--platform=managed',
 									'--cpu=$_NUM_CPUS',
 									'--memory=$_MEMORY',
-									data.allow_public_access
-										? '--ingress=all'
-										: '--ingress=internal',
+									data.allow_public_access ? '--no-invoker-iam-check' : '',
 									'--port=$_PORT',
 									// Pass the image argument
 									'--image=$_AR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA',
@@ -377,9 +375,7 @@ export const updateCloudBuildTriggerServerFn = createServerFn({
 			) {
 				const updatedArgs = step.args?.map((arg) => {
 					if (arg.startsWith('--ingress=')) {
-						return data.allow_public_access
-							? '--ingress=all'
-							: '--ingress=internal'
+						return data.allow_public_access ? '--no-invoker-iam-check' : ''
 					}
 					return arg
 				})

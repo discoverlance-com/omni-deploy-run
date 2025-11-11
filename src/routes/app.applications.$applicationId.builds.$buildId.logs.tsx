@@ -4,6 +4,7 @@ import {
 	LoaderIcon,
 	Maximize,
 	Minimize,
+	RefreshCw,
 	WifiOffIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -57,7 +58,10 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
 	const { build, buildId, applicationId } = Route.useLoaderData()
-	const { logs, connectionState, error } = useLogStream(applicationId, buildId)
+	const { logs, connectionState, error, refresh } = useLogStream(
+		applicationId,
+		buildId,
+	)
 	const [isFullscreen, setIsFullscreen] = useState(false)
 
 	// Handle escape key to exit fullscreen
@@ -149,6 +153,20 @@ function RouteComponent() {
 
 					<CardToolbar className="flex items-center gap-2">
 						{getConnectionIcon()}
+						<button
+							type="button"
+							onClick={refresh}
+							className="p-1 hover:bg-gray-100 rounded transition-colors"
+							title="Refresh logs"
+							disabled={connectionState === 'connecting'}
+						>
+							<RefreshCw
+								size={16}
+								className={`text-gray-600 ${
+									connectionState === 'connecting' ? 'animate-spin' : ''
+								}`}
+							/>
+						</button>
 						<button
 							type="button"
 							onClick={toggleFullscreen}
