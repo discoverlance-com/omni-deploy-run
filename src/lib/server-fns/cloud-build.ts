@@ -4,6 +4,7 @@ import z from 'zod/v4'
 
 import { getAllArtifactRegistries } from '@/database/artifact-registry'
 import { cloudBuildClient } from '@/services/cloud-build'
+import { cloudRunServicesClient } from '@/services/cloud-run'
 import { requireAuthentedUserMiddleware } from '@/utils/auth'
 import { applicationSchema } from '@/utils/validation'
 import { slugify } from '../utils'
@@ -416,10 +417,17 @@ export const deleteCloudBuildTriggerServerFn = createServerFn({
 			triggerId: z.string().min(1, 'Trigger ID is required'),
 			location: z.string().min(1, 'Location is required'),
 			name: z.string().min(1, 'Trigger name is required'),
+			applicationName: z.string().min(1, 'Application name is required'),
 		}),
 	)
 	.handler(async ({ data }) => {
 		const projectId = await cloudBuildClient.getProjectId()
+
+		const [serviceOperation] = await cloudRunServicesClient.deleteService({
+			name: `projects/${projectId}/locations/${data.location}/services/${data.applicationName}`,
+		})
+
+		await serviceOperation.promise()
 
 		const deleteRequest: GoogleProtos.devtools.cloudbuild.v1.IDeleteBuildTriggerRequest =
 			{

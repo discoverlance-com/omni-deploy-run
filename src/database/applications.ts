@@ -265,6 +265,7 @@ export const deleteApplicationComplete = createServerFn({
 			id: z.string().min(1, 'Application ID is required'),
 			triggerId: z.string().optional(),
 			triggerName: z.string().optional(),
+			applicationName: z.string().min(1, 'Application name is required'),
 			region: z.string().optional(),
 		}),
 	)
@@ -278,6 +279,7 @@ export const deleteApplicationComplete = createServerFn({
 					triggerId: data.triggerId,
 					location: data.region,
 					name: data.triggerName ?? '',
+					applicationName: data.applicationName,
 				},
 			})
 		}

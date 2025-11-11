@@ -85,6 +85,7 @@ function DeleteDialog({
 						triggerId: application.trigger_details?.id,
 						region: application.region,
 						triggerName: application.trigger_details?.name,
+						applicationName: application.name,
 					},
 				})
 
