@@ -79,7 +79,6 @@ export const createApplication = createServerFn({
 	.inputValidator(
 		applicationSchema.pick({
 			name: true,
-			description: true,
 			connection_id: true,
 			repository: true,
 			tags: true,
@@ -116,10 +115,21 @@ export const createApplication = createServerFn({
 			tags: data.tags,
 			repository: data.repository,
 			connection_id: data.connection_id,
+			git_branch: data.git_branch,
+			port: data.port,
+			region: data.region,
+			allow_public_access: data.allow_public_access,
+			memory: data.memory,
+			number_of_cpus: data.number_of_cpus,
+			environment_variables: data.environment_variables,
 			last_deployment_status:
 				'pending' as Application['last_deployment_status'],
 			created_at: now,
 			updated_at: now,
+			...(data.service_account_id && {
+				service_account_id: data.service_account_id,
+			}),
+			...(data.trigger_details && { trigger_details: data.trigger_details }),
 		}
 
 		await documentRef.set(docData)
@@ -127,7 +137,7 @@ export const createApplication = createServerFn({
 		return { id: documentRef.id }
 	})
 
-export const updateProject = createServerFn({
+export const updateApplication = createServerFn({
 	method: 'POST',
 })
 	.inputValidator(

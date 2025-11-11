@@ -5,6 +5,7 @@ import z from 'zod/v4'
 import { getAllArtifactRegistries } from '@/database/artifact-registry'
 import { cloudBuildClient } from '@/services/cloud-build'
 import { requireAuthentedUserMiddleware } from '@/utils/auth'
+import { applicationSchema } from '@/utils/validation'
 import { slugify } from '../utils'
 import { upsertRepositoryServerFn } from './repositories'
 import { getAppServiceAccountServerFn } from './service-accounts'
@@ -19,7 +20,7 @@ const cloudBuildTriggerSchema = z.object({
 	}),
 })
 
-function _extractOwnerAndRepo(githubUri: string): {
+function extractOwnerAndRepo(githubUri: string): {
 	owner: string
 	name: string
 } {
@@ -50,11 +51,21 @@ export const createGithubCloudBuildTriggerServerFn = createServerFn({
 	method: 'POST',
 })
 	.middleware([requireAuthentedUserMiddleware])
-	.inputValidator(cloudBuildTriggerSchema)
+	.inputValidator(
+		cloudBuildTriggerSchema.extend(
+			applicationSchema.pick({
+				port: true,
+				memory: true,
+				allow_public_access: true,
+				number_of_cpus: true,
+			}).shape,
+		),
+	)
 	.handler(async ({ data }) => {
 		const projectId = await cloudBuildClient.getProjectId()
 
 		const name = getApplicationName(data.applicationName)
+		const { name: repoName } = extractOwnerAndRepo(data.repository.remoteUri)
 
 		const repository = await upsertRepositoryServerFn({
 			data: {
@@ -83,9 +94,7 @@ export const createGithubCloudBuildTriggerServerFn = createServerFn({
 				trigger: {
 					serviceAccount: serviceAccount.fullName,
 					name: `${name}-github-trigger`,
-					description:
-						'GitHub Trigger created via Omni Deploy Run for the repository',
-
+					description: `GitHub Trigger created via Omni Deploy Run for the repository ${repoName}`,
 					repositoryEventConfig: {
 						repositoryType: 'GITHUB',
 						repository: repository.name,
@@ -123,6 +132,10 @@ export const createGithubCloudBuildTriggerServerFn = createServerFn({
 									'update',
 									'$_SERVICE_NAME',
 									'--platform=managed',
+									'--cpu=$_NUM_CPUS',
+									'--memory=$_MEMORY',
+									data.allow_public_access ? '--allow-unauthenticated' : '',
+									'--port=$_PORT',
 									// Pass the image argument
 									'--image=$_AR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA',
 									// The long labels argument must be one continuous string in the array
@@ -145,6 +158,9 @@ export const createGithubCloudBuildTriggerServerFn = createServerFn({
 							_PLATFORM: 'managed',
 							_SERVICE_NAME: name,
 							_DEPLOY_REGION: data.location,
+							_PORT: data.port.toString(),
+							_MEMORY: data.memory,
+							_NUM_CPUS: data.number_of_cpus.toString(),
 						},
 					},
 				},
@@ -154,6 +170,7 @@ export const createGithubCloudBuildTriggerServerFn = createServerFn({
 
 		const triggerDetails = {
 			name: response.name,
+			applicationName: name,
 			createTime: response.createTime
 				? new Date(Number(response.createTime.seconds) * 1000)
 				: undefined,
@@ -181,6 +198,7 @@ export const runCloudBuildTriggerServerFn = createServerFn({
 			triggerName: z.string().min(1, 'Trigger name is required'),
 			location: z.string().min(1, 'Location is required'),
 			triggerId: z.string().min(1, 'Trigger ID is required'),
+			branchName: z.string().min(1, 'Branch name is required'),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -189,15 +207,14 @@ export const runCloudBuildTriggerServerFn = createServerFn({
 		const request: GoogleProtos.devtools.cloudbuild.v1.IRunBuildTriggerRequest =
 			{
 				projectId,
-				triggerId: 'f754153a-f752-4408-984e-b72c0b556c01',
+				triggerId: data.triggerId,
 				name: `projects/${projectId}/locations/${data.location}/triggers/${data.triggerName}`,
 				source: {
-					branchName: 'main',
+					branchName: data.branchName,
 				},
 			}
 
 		const [operation] = await cloudBuildClient.runBuildTrigger(request)
 
-		const [response] = await operation.promise()
-		console.log({ response })
+		return { operationName: operation.name }
 	})

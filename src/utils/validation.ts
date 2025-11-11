@@ -65,6 +65,14 @@ export const applicationSchema = z.object({
 		SUPPORTED_CLOUD_RUN_LOCATIONS.map((loc) => loc.value),
 		'Region not supported',
 	),
+	cloud_build_info: z
+		.array(
+			z.object({
+				id: z.string(),
+				timestamp: z.string(),
+			}),
+		)
+		.optional(),
 	allow_public_access: z.boolean(),
 	memory: z.enum(
 		SUPPORTED_CLOUD_RUN_MEMORY_OPTIONS.map((option) => option.value),
@@ -93,12 +101,9 @@ export const applicationSchema = z.object({
 		),
 	port: z
 		.number()
+		.int('Port must be a whole number')
 		.min(1, 'Port must be at least 1')
-		.max(65535, 'Port must not exceed 65535')
-		.refine(
-			(port) => port >= 1024 || port === 80 || port === 443,
-			'Port should be above 1024 or 80/443 for standard HTTP ports',
-		),
+		.max(65535, 'Port must not exceed 65535'),
 	trigger_details: z
 		.object({
 			service_account: z.string(),

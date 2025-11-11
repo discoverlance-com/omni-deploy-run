@@ -1,10 +1,7 @@
-import util from 'node:util'
-
 import { useStore } from '@tanstack/react-form'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { GlobeIcon, KeyIcon, PlusCircleIcon, XIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import type z4 from 'zod/v4'
 
@@ -20,33 +17,16 @@ import {
 	CardTitle,
 } from '@/components/ui/card'
 import {
-	Field,
-	FieldContent,
 	FieldDescription,
-	FieldError,
 	FieldGroup,
 	FieldLegend,
 	FieldSet,
 } from '@/components/ui/field'
-import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupButton,
-	InputGroupInput,
-} from '@/components/ui/input-group'
-import {
-	Item,
-	ItemActions,
-	ItemContent,
-	ItemDescription,
-	ItemTitle,
-} from '@/components/ui/item'
 import { SelectItem } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
 import { siteInfo } from '@/config/site'
 import { createApplication } from '@/database/applications'
 import { useAppForm } from '@/lib/form'
-import { runCloudBuildTriggerServerFn } from '@/lib/server-fns/cloud-build'
+import { createGithubCloudBuildTriggerServerFn } from '@/lib/server-fns/cloud-build'
 import { SUPPORTED_CLOUD_BUILD_LOCATIONS } from '@/utils/cloud-build-locations'
 import { SUPPORTED_CLOUD_RUN_MEMORY_OPTIONS } from '@/utils/cloud-run-locations'
 import {
@@ -65,32 +45,6 @@ export const Route = createFileRoute('/app/applications/create')({
 	}),
 	async loader({ context }) {
 		await context.queryClient.ensureQueryData(connectionQueryOptions())
-
-		try {
-			await runCloudBuildTriggerServerFn({
-				data: {
-					triggerId: '96c8b486-8911-4ba5-812d-9ff8f47983ef',
-					location: 'us-central1',
-					triggerName: 'react-router-starter-github-trigger',
-				},
-			})
-			// await createGithubCloudBuildTriggerServerFn({
-			// 	data: {
-			// 		applicationName: 'react-router-starter',
-			// 		branch: 'main',
-			// 		location: 'us-central1',
-			// 		connectionId:
-			// 			'projects/omni-deploy-run/locations/us-central1/connections/omni-deploy-run-github-connection',
-			// 		repository: {
-			// 			remoteUri:
-			// 				'https://github.com/discoverlance-com/react-router-starter.git',
-			// 		},
-			// 	},
-			// })
-		} catch (error) {
-			console.log(util.inspect(error, false, null, true /* enable colors */))
-			throw error
-		}
 	},
 	component: RouteComponent,
 })
@@ -111,6 +65,7 @@ const createApplicationSchema = applicationSchema.pick({
 
 function RouteComponent() {
 	const addApplication = useServerFn(createApplication)
+	const createBuildTrigger = useServerFn(createGithubCloudBuildTriggerServerFn)
 	const navigate = Route.useNavigate()
 
 	const { data: connections } = useSuspenseQuery(connectionQueryOptions())
@@ -134,9 +89,50 @@ function RouteComponent() {
 		},
 		async onSubmit({ value, formApi }) {
 			try {
-				await addApplication({ data: { ...value } })
+				const trigger = await createBuildTrigger({
+					data: {
+						applicationName: value.name,
+						branch: value.git_branch,
+						location: value.region,
+						connectionId:
+							'projects/omni-deploy-run/locations/us-central1/connections/omni-deploy-run-github-connection',
+						repository: {
+							remoteUri:
+								'https://github.com/discoverlance-com/react-router-starter.git',
+						},
+						allow_public_access: value.allow_public_access,
+						memory: value.memory,
+						number_of_cpus: value.number_of_cpus,
+						port: value.port,
+					},
+				})
 
-				navigate({ to: '/app/applications' })
+				const app = await addApplication({
+					data: {
+						...value,
+						name: trigger.applicationName,
+						trigger_details: {
+							name: trigger.name ?? '',
+							service_account: trigger.serviceAccount,
+							repository_event_config: {
+								name: trigger.repositoryEventConfig.name,
+								pull_request: {
+									branch:
+										trigger.repositoryEventConfig.pull_request?.branch ?? '',
+								},
+								push: {
+									branch: trigger.repositoryEventConfig.push?.branch ?? '',
+								},
+							},
+						},
+					},
+				})
+
+				await navigate({
+					to: '/app/applications/$applicationId',
+					params: { applicationId: app.id },
+				})
+				toast.success('Application created successfully!')
 			} catch (e) {
 				const result = maybeHandleFormZodError(e, value, formApi)
 
@@ -430,7 +426,7 @@ function RouteComponent() {
 								</FieldGroup>
 							</FieldSet>
 
-							<FieldSet className="border p-4">
+							{/* <FieldSet className="border p-4">
 								<FieldLegend>Environment Variables</FieldLegend>
 								<FieldDescription>
 									Environment variables to set for the application
@@ -671,7 +667,7 @@ function RouteComponent() {
 										}}
 									</form.Field>
 								</FieldGroup>
-							</FieldSet>
+							</FieldSet> */}
 						</FieldGroup>
 					</CardContent>
 
@@ -683,7 +679,7 @@ function RouteComponent() {
 						</Button>
 						<form.AppForm>
 							<form.SubscribeButton className="flex-1">
-								Save
+								Setup Application
 							</form.SubscribeButton>
 						</form.AppForm>
 					</CardFooter>
