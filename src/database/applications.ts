@@ -143,7 +143,6 @@ export const updateApplication = createServerFn({
 	.inputValidator(
 		applicationSchema
 			.pick({
-				description: true,
 				allow_public_access: true,
 				memory: true,
 				port: true,
@@ -173,6 +172,14 @@ export const updateApplication = createServerFn({
 		if (data.url !== undefined) updateData.url = data.url
 		if (data.connection_id !== undefined)
 			updateData.connection_id = data.connection_id
+		if (data.allow_public_access !== undefined)
+			updateData.allow_public_access = data.allow_public_access
+		if (data.memory !== undefined) updateData.memory = data.memory
+		if (data.number_of_cpus !== undefined)
+			updateData.number_of_cpus = data.number_of_cpus
+		if (data.port !== undefined) updateData.port = data.port
+		if (data.last_deployment_status !== undefined)
+			updateData.last_deployment_status = data.last_deployment_status
 
 		await documentRef.update(updateData)
 

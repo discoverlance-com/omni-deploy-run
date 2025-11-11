@@ -320,3 +320,93 @@ export const getBuildServerFn = createServerFn({
 			throw new Error('Build not found or inaccessible')
 		}
 	})
+
+export const updateCloudBuildTriggerServerFn = createServerFn({
+	method: 'POST',
+})
+	.middleware([requireAuthentedUserMiddleware])
+	.inputValidator(
+		z
+			.object({
+				trigger: z.object({
+					triggerId: z.string().min(1, 'Trigger ID is required'),
+					location: z.string().min(1, 'Location is required'),
+					name: z.string().min(1, 'Trigger name is required'),
+				}),
+			})
+			.extend(
+				applicationSchema.pick({
+					port: true,
+					memory: true,
+					allow_public_access: true,
+					number_of_cpus: true,
+				}).shape,
+			),
+	)
+	.handler(async ({ data }) => {
+		const projectId = await cloudBuildClient.getProjectId()
+
+		// First, get the existing trigger to preserve other settings
+		const getTriggerRequest: GoogleProtos.devtools.cloudbuild.v1.IGetBuildTriggerRequest =
+			{
+				projectId,
+				triggerId: data.trigger.triggerId,
+				name: `projects/${projectId}/locations/${data.trigger.location}/triggers/${data.trigger.name}`,
+			}
+
+		const [existingTrigger] =
+			await cloudBuildClient.getBuildTrigger(getTriggerRequest)
+
+		if (!existingTrigger || !existingTrigger.build) {
+			throw new Error('Build trigger not found')
+		}
+
+		// Update the substitutions with new values
+		const updatedSubstitutions = {
+			...existingTrigger.build.substitutions,
+			_PORT: data.port.toString(),
+			_MEMORY: data.memory,
+			_NUM_CPUS: data.number_of_cpus.toString(),
+		}
+
+		// Update the Cloud Run deploy step to use new ingress setting
+		const updatedSteps = existingTrigger.build.steps?.map((step) => {
+			if (
+				step.id === 'Deploy' &&
+				step.name === 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+			) {
+				const updatedArgs = step.args?.map((arg) => {
+					if (arg.startsWith('--ingress=')) {
+						return data.allow_public_access
+							? '--ingress=all'
+							: '--ingress=internal'
+					}
+					return arg
+				})
+				return { ...step, args: updatedArgs }
+			}
+			return step
+		})
+
+		const updateRequest: GoogleProtos.devtools.cloudbuild.v1.IUpdateBuildTriggerRequest =
+			{
+				projectId,
+				triggerId: data.trigger.triggerId,
+				trigger: {
+					...existingTrigger,
+					build: {
+						...existingTrigger.build,
+						steps: updatedSteps,
+						substitutions: updatedSubstitutions,
+					},
+				},
+			}
+
+		const [response] = await cloudBuildClient.updateBuildTrigger(updateRequest)
+
+		return {
+			id: response.id,
+			name: response.name,
+			success: true,
+		}
+	})

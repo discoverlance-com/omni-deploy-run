@@ -10,6 +10,7 @@ import {
 import { useTransition } from 'react'
 import { toast } from 'sonner'
 
+import { ApplicationSettingsDialog } from '@/components/application-settings-dialog'
 import { DashboardNotFound } from '@/components/layout/not-found'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -139,7 +140,14 @@ function RouteComponent() {
 			{/* Header */}
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="text-4xl font-bold">{application.name}</h1>
+					<Link
+						to="/app/applications/$applicationId"
+						params={{
+							applicationId: application.id,
+						}}
+					>
+						<h1 className="text-4xl font-bold">{application.name}</h1>
+					</Link>
 					<p className="text-muted-foreground mt-1">
 						Application deployed on {application.region}
 					</p>
@@ -152,10 +160,15 @@ function RouteComponent() {
 						<PlayIcon size={16} />
 						{isPending ? 'Triggering...' : 'Manually Trigger Build'}
 					</Button>
-					<Button variant="outline">
-						<SettingsIcon size={16} />
-						Settings
-					</Button>
+					<ApplicationSettingsDialog
+						trigger={
+							<Button variant="outline">
+								<SettingsIcon size={16} />
+								Settings
+							</Button>
+						}
+						application={application}
+					/>
 				</div>
 			</div>
 
