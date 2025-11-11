@@ -21,6 +21,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import {
 	Tooltip,
@@ -354,7 +355,8 @@ function RouteComponent() {
 					<CardContent>
 						{application.cloud_build_info &&
 						application.cloud_build_info.length > 0 ? (
-							<div className="space-y-3">
+							<ScrollArea className="space-y-3 h-96">
+								<ScrollBar orientation="horizontal" />
 								{application.cloud_build_info
 									.sort(
 										(a, b) =>
@@ -391,7 +393,7 @@ function RouteComponent() {
 											</p>
 										</Link>
 									))}
-							</div>
+							</ScrollArea>
 						) : (
 							<div className="text-center py-8 text-muted-foreground">
 								<CalendarIcon size={48} className="mx-auto mb-4 opacity-50" />

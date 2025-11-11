@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod/v4'
 
 import { getFirestoreClient } from '@/lib/firestore-client'
+import { deleteCloudBuildTriggerServerFn } from '@/lib/server-fns/cloud-build'
 import { type Application, applicationSchema } from '@/utils/validation'
 
 const COLLECTION_NAME = 'applications'
@@ -251,6 +252,38 @@ export const deleteApplication = createServerFn({
 		const firestore = getFirestoreClient()
 		const documentRef = firestore.collection(COLLECTION_NAME).doc(data.id)
 
+		await documentRef.delete()
+
+		return { success: true }
+	})
+
+export const deleteApplicationComplete = createServerFn({
+	method: 'POST',
+})
+	.inputValidator(
+		z.object({
+			id: z.string().min(1, 'Application ID is required'),
+			triggerId: z.string().optional(),
+			triggerName: z.string().optional(),
+			region: z.string().optional(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const firestore = getFirestoreClient()
+
+		// First, delete the Cloud Build trigger if it exists
+		if (data.triggerId && data.region) {
+			await deleteCloudBuildTriggerServerFn({
+				data: {
+					triggerId: data.triggerId,
+					location: data.region,
+					name: data.triggerName ?? '',
+				},
+			})
+		}
+
+		// Only delete from Firestore if trigger deletion succeeded (or no trigger to delete)
+		const documentRef = firestore.collection(COLLECTION_NAME).doc(data.id)
 		await documentRef.delete()
 
 		return { success: true }

@@ -410,3 +410,37 @@ export const updateCloudBuildTriggerServerFn = createServerFn({
 			success: true,
 		}
 	})
+
+export const deleteCloudBuildTriggerServerFn = createServerFn({
+	method: 'POST',
+})
+	.middleware([requireAuthentedUserMiddleware])
+	.inputValidator(
+		z.object({
+			triggerId: z.string().min(1, 'Trigger ID is required'),
+			location: z.string().min(1, 'Location is required'),
+			name: z.string().min(1, 'Trigger name is required'),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const projectId = await cloudBuildClient.getProjectId()
+
+		const deleteRequest: GoogleProtos.devtools.cloudbuild.v1.IDeleteBuildTriggerRequest =
+			{
+				projectId,
+				triggerId: data.triggerId,
+				name: `projects/${projectId}/locations/${data.location}/triggers/${data.name}`,
+			}
+
+		try {
+			await cloudBuildClient.deleteBuildTrigger(deleteRequest)
+
+			return {
+				success: true,
+				triggerId: data.triggerId,
+			}
+		} catch (error) {
+			console.error('Error deleting build trigger:', error)
+			throw new Error('Failed to delete build trigger')
+		}
+	})
