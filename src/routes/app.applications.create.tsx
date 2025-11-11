@@ -98,11 +98,9 @@ function RouteComponent() {
 						applicationName: value.name,
 						branch: value.git_branch,
 						location: value.region,
-						connectionId:
-							'projects/omni-deploy-run/locations/us-central1/connections/omni-deploy-run-github-connection',
+						connectionId: value.connection_id,
 						repository: {
-							remoteUri:
-								'https://github.com/discoverlance-com/react-router-starter.git',
+							remoteUri: value.repository,
 						},
 						allow_public_access: value.allow_public_access,
 						memory: value.memory,
