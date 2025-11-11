@@ -34,6 +34,7 @@ import {
 	applicationSchema,
 	maybeHandleFormZodError,
 } from '@/utils/validation'
+import { applicationsQueryOptions } from './app/applications/-data/query-options'
 import {
 	connectionQueryOptions,
 	linkableRepositiresQueryOptions,
@@ -67,6 +68,9 @@ function RouteComponent() {
 	const addApplication = useServerFn(createApplication)
 	const createBuildTrigger = useServerFn(createGithubCloudBuildTriggerServerFn)
 	const navigate = Route.useNavigate()
+	const queryClient = Route.useRouteContext({
+		select: (options) => options.queryClient,
+	})
 
 	const { data: connections } = useSuspenseQuery(connectionQueryOptions())
 
@@ -112,6 +116,7 @@ function RouteComponent() {
 						...value,
 						name: trigger.applicationName,
 						trigger_details: {
+							id: trigger.id ?? '',
 							name: trigger.name ?? '',
 							service_account: trigger.serviceAccount,
 							repository_event_config: {
@@ -127,6 +132,8 @@ function RouteComponent() {
 						},
 					},
 				})
+
+				await queryClient.invalidateQueries(applicationsQueryOptions())
 
 				await navigate({
 					to: '/app/applications/$applicationId',

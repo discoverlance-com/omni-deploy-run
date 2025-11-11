@@ -37,10 +37,8 @@ export const createArtifactRegistryServerFn = createServerFn({ method: 'POST' })
 			}
 
 		try {
-			console.log('CREATING ARTIFACT REGISTRY')
 			const [operation] = await artifactRegistryClient.createRepository(request)
 			const [response] = await operation.promise()
-			console.log('DONE WITH ARTIFACT')
 
 			return {
 				name: response.name,

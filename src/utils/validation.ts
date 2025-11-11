@@ -106,6 +106,7 @@ export const applicationSchema = z.object({
 		.max(65535, 'Port must not exceed 65535'),
 	trigger_details: z
 		.object({
+			id: z.string(),
 			service_account: z.string(),
 			name: z.string(),
 			repository_event_config: z.object({

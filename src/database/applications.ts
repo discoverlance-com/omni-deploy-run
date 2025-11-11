@@ -144,6 +144,10 @@ export const updateApplication = createServerFn({
 		applicationSchema
 			.pick({
 				description: true,
+				allow_public_access: true,
+				memory: true,
+				port: true,
+				number_of_cpus: true,
 				connection_id: true,
 				repository: true,
 				tags: true,
@@ -171,6 +175,59 @@ export const updateApplication = createServerFn({
 			updateData.connection_id = data.connection_id
 
 		await documentRef.update(updateData)
+
+		return { success: true }
+	})
+
+export const addBuildToApplication = createServerFn({
+	method: 'POST',
+})
+	.inputValidator(
+		z.object({
+			applicationId: z.string().min(1, 'Application ID is required'),
+			buildInfo: z.object({
+				id: z.string().min(1, 'Build ID is required'),
+				timestamp: z.string().min(1, 'Build timestamp is required'),
+			}),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const firestore = getFirestoreClient()
+		const documentRef = firestore
+			.collection(COLLECTION_NAME)
+			.doc(data.applicationId)
+
+		// Get current application to update cloud_build_info array
+		const doc = await documentRef.get()
+		if (!doc.exists) {
+			throw new Error('Application not found')
+		}
+
+		const currentData = doc.data() as Application
+		const currentBuildInfo = currentData.cloud_build_info || []
+
+		// Check if build ID already exists to avoid duplicates
+		const existingBuild = currentBuildInfo.find(
+			(build) => build.id === data.buildInfo.id,
+		)
+		if (existingBuild) {
+			return { success: true, message: 'Build already exists in application' }
+		}
+
+		// Add new build to the array
+		const updatedBuildInfo = [
+			...currentBuildInfo,
+			{
+				id: data.buildInfo.id,
+				timestamp: data.buildInfo.timestamp,
+			},
+		]
+
+		// Update the document
+		await documentRef.update({
+			cloud_build_info: updatedBuildInfo,
+			updated_at: Timestamp.now(),
+		})
 
 		return { success: true }
 	})

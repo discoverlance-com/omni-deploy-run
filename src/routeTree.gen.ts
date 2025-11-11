@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OnboardingIndexRouteImport } from './routes/onboarding.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as ApiHelloRouteImport } from './routes/api/hello'
 import { Route as AppSettingsIndexRouteImport } from './routes/app.settings.index'
 import { Route as AppProfileIndexRouteImport } from './routes/app.profile.index'
 import { Route as AppConnectionsIndexRouteImport } from './routes/app.connections.index'
@@ -21,6 +22,8 @@ import { Route as AppConnectionsCreateRouteImport } from './routes/app.connectio
 import { Route as AppApplicationsCreateRouteImport } from './routes/app.applications.create'
 import { Route as AppApplicationsApplicationIdRouteImport } from './routes/app.applications.$applicationId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as ApiLogsApplicationIdBuildsBuildIdRouteImport } from './routes/api/logs/$applicationId/builds/$buildId'
+import { Route as AppApplicationsApplicationIdBuildsBuildIdLogsRouteImport } from './routes/app.applications.$applicationId.builds.$buildId.logs'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -41,6 +44,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const ApiHelloRoute = ApiHelloRouteImport.update({
+  id: '/api/hello',
+  path: '/api/hello',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
@@ -83,54 +91,76 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLogsApplicationIdBuildsBuildIdRoute =
+  ApiLogsApplicationIdBuildsBuildIdRouteImport.update({
+    id: '/api/logs/$applicationId/builds/$buildId',
+    path: '/api/logs/$applicationId/builds/$buildId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AppApplicationsApplicationIdBuildsBuildIdLogsRoute =
+  AppApplicationsApplicationIdBuildsBuildIdLogsRouteImport.update({
+    id: '/builds/$buildId/logs',
+    path: '/builds/$buildId/logs',
+    getParentRoute: () => AppApplicationsApplicationIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/api/hello': typeof ApiHelloRoute
   '/app/': typeof AppIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRoute
+  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRouteWithChildren
   '/app/applications/create': typeof AppApplicationsCreateRoute
   '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications': typeof AppApplicationsIndexRoute
   '/app/connections': typeof AppConnectionsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
+  '/api/logs/$applicationId/builds/$buildId': typeof ApiLogsApplicationIdBuildsBuildIdRoute
+  '/app/applications/$applicationId/builds/$buildId/logs': typeof AppApplicationsApplicationIdBuildsBuildIdLogsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/hello': typeof ApiHelloRoute
   '/app': typeof AppIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRoute
+  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRouteWithChildren
   '/app/applications/create': typeof AppApplicationsCreateRoute
   '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications': typeof AppApplicationsIndexRoute
   '/app/connections': typeof AppConnectionsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
+  '/api/logs/$applicationId/builds/$buildId': typeof ApiLogsApplicationIdBuildsBuildIdRoute
+  '/app/applications/$applicationId/builds/$buildId/logs': typeof AppApplicationsApplicationIdBuildsBuildIdLogsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/api/hello': typeof ApiHelloRoute
   '/app/': typeof AppIndexRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRoute
+  '/app/applications/$applicationId': typeof AppApplicationsApplicationIdRouteWithChildren
   '/app/applications/create': typeof AppApplicationsCreateRoute
   '/app/connections/create': typeof AppConnectionsCreateRoute
   '/app/applications/': typeof AppApplicationsIndexRoute
   '/app/connections/': typeof AppConnectionsIndexRoute
   '/app/profile/': typeof AppProfileIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
+  '/api/logs/$applicationId/builds/$buildId': typeof ApiLogsApplicationIdBuildsBuildIdRoute
+  '/app/applications/$applicationId/builds/$buildId/logs': typeof AppApplicationsApplicationIdBuildsBuildIdLogsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/app'
+    | '/api/hello'
     | '/app/'
     | '/onboarding'
     | '/api/auth/$'
@@ -141,9 +171,12 @@ export interface FileRouteTypes {
     | '/app/connections'
     | '/app/profile'
     | '/app/settings'
+    | '/api/logs/$applicationId/builds/$buildId'
+    | '/app/applications/$applicationId/builds/$buildId/logs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api/hello'
     | '/app'
     | '/onboarding'
     | '/api/auth/$'
@@ -154,10 +187,13 @@ export interface FileRouteTypes {
     | '/app/connections'
     | '/app/profile'
     | '/app/settings'
+    | '/api/logs/$applicationId/builds/$buildId'
+    | '/app/applications/$applicationId/builds/$buildId/logs'
   id:
     | '__root__'
     | '/'
     | '/app'
+    | '/api/hello'
     | '/app/'
     | '/onboarding/'
     | '/api/auth/$'
@@ -168,13 +204,17 @@ export interface FileRouteTypes {
     | '/app/connections/'
     | '/app/profile/'
     | '/app/settings/'
+    | '/api/logs/$applicationId/builds/$buildId'
+    | '/app/applications/$applicationId/builds/$buildId/logs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  ApiHelloRoute: typeof ApiHelloRoute
   OnboardingIndexRoute: typeof OnboardingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiLogsApplicationIdBuildsBuildIdRoute: typeof ApiLogsApplicationIdBuildsBuildIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -206,6 +246,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/api/hello': {
+      id: '/api/hello'
+      path: '/api/hello'
+      fullPath: '/api/hello'
+      preLoaderRoute: typeof ApiHelloRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/settings/': {
       id: '/app/settings/'
@@ -263,12 +310,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/logs/$applicationId/builds/$buildId': {
+      id: '/api/logs/$applicationId/builds/$buildId'
+      path: '/api/logs/$applicationId/builds/$buildId'
+      fullPath: '/api/logs/$applicationId/builds/$buildId'
+      preLoaderRoute: typeof ApiLogsApplicationIdBuildsBuildIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/applications/$applicationId/builds/$buildId/logs': {
+      id: '/app/applications/$applicationId/builds/$buildId/logs'
+      path: '/builds/$buildId/logs'
+      fullPath: '/app/applications/$applicationId/builds/$buildId/logs'
+      preLoaderRoute: typeof AppApplicationsApplicationIdBuildsBuildIdLogsRouteImport
+      parentRoute: typeof AppApplicationsApplicationIdRoute
+    }
   }
 }
 
+interface AppApplicationsApplicationIdRouteChildren {
+  AppApplicationsApplicationIdBuildsBuildIdLogsRoute: typeof AppApplicationsApplicationIdBuildsBuildIdLogsRoute
+}
+
+const AppApplicationsApplicationIdRouteChildren: AppApplicationsApplicationIdRouteChildren =
+  {
+    AppApplicationsApplicationIdBuildsBuildIdLogsRoute:
+      AppApplicationsApplicationIdBuildsBuildIdLogsRoute,
+  }
+
+const AppApplicationsApplicationIdRouteWithChildren =
+  AppApplicationsApplicationIdRoute._addFileChildren(
+    AppApplicationsApplicationIdRouteChildren,
+  )
+
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
-  AppApplicationsApplicationIdRoute: typeof AppApplicationsApplicationIdRoute
+  AppApplicationsApplicationIdRoute: typeof AppApplicationsApplicationIdRouteWithChildren
   AppApplicationsCreateRoute: typeof AppApplicationsCreateRoute
   AppConnectionsCreateRoute: typeof AppConnectionsCreateRoute
   AppApplicationsIndexRoute: typeof AppApplicationsIndexRoute
@@ -279,7 +355,8 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
-  AppApplicationsApplicationIdRoute: AppApplicationsApplicationIdRoute,
+  AppApplicationsApplicationIdRoute:
+    AppApplicationsApplicationIdRouteWithChildren,
   AppApplicationsCreateRoute: AppApplicationsCreateRoute,
   AppConnectionsCreateRoute: AppConnectionsCreateRoute,
   AppApplicationsIndexRoute: AppApplicationsIndexRoute,
@@ -293,8 +370,11 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  ApiHelloRoute: ApiHelloRoute,
   OnboardingIndexRoute: OnboardingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiLogsApplicationIdBuildsBuildIdRoute:
+    ApiLogsApplicationIdBuildsBuildIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

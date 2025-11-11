@@ -1,7 +1,7 @@
 import type { Collection } from '@tanstack/db'
 import { useEffect, useRef } from 'react'
 
-export function useStreamConnection(
+export function useCollectionStreamConnection(
 	url: string,
 	// biome-ignore lint/suspicious/noExplicitAny: not needed
 	collection: Collection<any, any, any>,

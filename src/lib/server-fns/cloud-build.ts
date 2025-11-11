@@ -134,7 +134,9 @@ export const createGithubCloudBuildTriggerServerFn = createServerFn({
 									'--platform=managed',
 									'--cpu=$_NUM_CPUS',
 									'--memory=$_MEMORY',
-									data.allow_public_access ? '--allow-unauthenticated' : '',
+									data.allow_public_access
+										? '--ingress=all'
+										: '--ingress=internal',
 									'--port=$_PORT',
 									// Pass the image argument
 									'--image=$_AR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA',
@@ -216,5 +218,105 @@ export const runCloudBuildTriggerServerFn = createServerFn({
 
 		const [operation] = await cloudBuildClient.runBuildTrigger(request)
 
-		return { operationName: operation.name }
+		// Extract serializable metadata
+		let buildId: string | null = null
+		let metadataInfo: Record<string, string | number | boolean | null> = {}
+
+		if (operation.metadata) {
+			try {
+				// Cast metadata to access build property (we know from logs it exists)
+				const metadata = operation.metadata as {
+					build?: {
+						id?: string
+						status?: number
+						logUrl?: string
+						createTime?: unknown
+						projectId?: string
+						substitutions?: Record<string, string>
+					}
+				}
+
+				// Check if metadata has build object directly (which it does based on logs)
+				if (metadata.build) {
+					buildId = metadata.build.id || null
+
+					// Extract useful build information
+					metadataInfo = {
+						buildId: metadata.build.id || null,
+						status: metadata.build.status || null,
+						logUrl: metadata.build.logUrl || null,
+						projectId: metadata.build.projectId || null,
+						// Note: substitutions is an object, so we'll stringify it for now
+						substitutions: metadata.build.substitutions
+							? JSON.stringify(metadata.build.substitutions)
+							: null,
+					}
+				} else {
+					console.log('No build object in metadata')
+				}
+			} catch (error) {
+				console.log('Error extracting metadata:', error)
+			}
+		} else {
+			console.log('No metadata in operation')
+		}
+
+		return {
+			operationName: operation.name || null,
+			buildId,
+			metadataInfo,
+			done: operation.done || false,
+		}
+	})
+
+export const getBuildServerFn = createServerFn({
+	method: 'GET',
+})
+	.middleware([requireAuthentedUserMiddleware])
+	.inputValidator(
+		z.object({
+			buildId: z.string().min(1, 'Build ID is required'),
+			location: z.string().min(1, 'Location is required'),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const projectId = await cloudBuildClient.getProjectId()
+
+		const request: GoogleProtos.devtools.cloudbuild.v1.IGetBuildRequest = {
+			projectId,
+			name: `projects/${projectId}/locations/${data.location}/builds/${data.buildId}`,
+			id: data.buildId,
+		}
+
+		try {
+			const [build] = await cloudBuildClient.getBuild(request)
+
+			if (!build) {
+				throw new Error('Build not found')
+			}
+
+			// Convert build to serializable format
+			return {
+				id: build.id || null,
+				status: build.status || null,
+				logUrl: build.logUrl || null,
+				createTime: build.createTime
+					? new Date(Number(build.createTime.seconds) * 1000)
+					: null,
+				finishTime: build.finishTime
+					? new Date(Number(build.finishTime.seconds) * 1000)
+					: null,
+				projectId: build.projectId || null,
+				sourceProvenance: {
+					resolvedRepoSource:
+						build.sourceProvenance?.resolvedRepoSource || null,
+				},
+				substitutions: build.substitutions || {},
+				tags: build.tags || [],
+				name: build.name || null,
+			}
+		} catch (error) {
+			console.error('Error getting build:', error)
+			throw new Error('Build not found or inaccessible')
+		}
 	})
