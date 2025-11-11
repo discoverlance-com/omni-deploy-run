@@ -151,7 +151,7 @@ function RouteComponent() {
 						</CardDescription>
 					</CardHeading>
 
-					<CardToolbar className="flex items-center gap-2">
+					<CardToolbar className="gap-2">
 						{getConnectionIcon()}
 						<button
 							type="button"
